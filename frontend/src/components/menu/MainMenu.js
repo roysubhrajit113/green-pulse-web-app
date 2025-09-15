@@ -1,6 +1,6 @@
 import React from "react";
 
-// Chakra imports
+
 import {
   Icon,
   Flex,
@@ -12,7 +12,7 @@ import {
   useDisclosure,
   useColorModeValue,
 } from "@chakra-ui/react";
-// Assets
+
 import {
   MdOutlineMoreHoriz,
   MdOutlinePerson,
@@ -45,7 +45,7 @@ export default function Banner(props) {
     { bg: "whiteAlpha.100" }
   );
 
-  // Ellipsis modals
+
   const {
     isOpen: isOpen1,
     onOpen: onOpen1,

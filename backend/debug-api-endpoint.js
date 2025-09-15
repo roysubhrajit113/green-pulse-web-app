@@ -9,7 +9,7 @@ async function debugApiEndpoint() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    // Test with a known working user
+
     const user = await User.findOne({ email: 'anamika123@gmail.com' });
     if (!user) {
       console.log('User not found');
@@ -19,7 +19,7 @@ async function debugApiEndpoint() {
     console.log('Testing with user:', user.email);
     console.log('User institute:', user.institute);
 
-    // Create a mock request object like what the API would receive
+
     const mockReq = {
       user: {
         _id: user._id
@@ -27,7 +27,7 @@ async function debugApiEndpoint() {
       userInstitute: user.institute
     };
 
-    // Create a mock response object
+
     let responseData = null;
     let statusCode = null;
     const mockRes = {
@@ -43,7 +43,7 @@ async function debugApiEndpoint() {
 
     console.log('\n=== Calling getDashboardData ===');
     
-    // Call the actual controller function
+
     await getDashboardData(mockReq, mockRes);
     
     console.log('Status code:', statusCode);

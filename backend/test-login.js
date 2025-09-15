@@ -7,7 +7,7 @@ async function testLogin() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    // Test with known users
+
     const testUsers = [
       'rajesh.kumar@iitb.ac.in',
       'anamika123@gmail.com', 
@@ -27,11 +27,11 @@ async function testLogin() {
       console.log(`Institute type: ${typeof user.institute}`);
       console.log(`Institute value:`, user.institute);
       
-      // Test password comparison
+
       const isPasswordValid = await user.comparePassword('password123');
       console.log(`Password valid: ${isPasswordValid ? 'YES' : 'NO'}`);
       
-      // Show what institute should be sent for login
+
       if (typeof user.institute === 'string') {
         console.log(`Login should send institute as string: "${user.institute}"`);
       } else if (typeof user.institute === 'object') {

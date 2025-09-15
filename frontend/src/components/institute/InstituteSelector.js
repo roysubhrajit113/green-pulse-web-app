@@ -1,4 +1,4 @@
-// components/institute/InstituteSelector.jsx
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -155,7 +155,7 @@ const InstituteSelector = ({ onSelect, isSignUp = false }) => {
         <Box flex="1" textAlign="left">
           <Text
             isTruncated
-            maxW="300px" // Adjust this width as needed
+            maxW="300px"
             fontSize="md"
           >
             {currentInstitute ? currentInstitute.name : 'Select Institute'}

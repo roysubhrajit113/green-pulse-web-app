@@ -1,4 +1,4 @@
-// frontend/src/views/auth/signIn/index.jsx
+
 import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -31,7 +31,7 @@ function SignIn() {
   const navigate = useNavigate();
   const toast = useToast();
   
-  // Destructure ALL context values
+
   const {
     currentInstitute,
     institutes,
@@ -41,7 +41,7 @@ function SignIn() {
   
   const { login, loading } = useAuth();
 
-  // Form state
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -49,7 +49,7 @@ function SignIn() {
   const [errors, setErrors] = useState([]);
   const [show, setShow] = useState(false);
 
-  // Chakra color mode
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
   const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
@@ -119,7 +119,7 @@ function SignIn() {
     }
   };
 
-  // Debug logging (useful for development)
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       console.log("🏫 SignIn Debug:");
@@ -131,7 +131,7 @@ function SignIn() {
     }
   }, [institutes, instituteLoading, instituteError, currentInstitute]);
 
-  // Handle loading state - Early return for cleaner code
+
   if (instituteLoading) {
     return (
       <DefaultAuth illustrationBackground={illustration} image={illustration}>
@@ -142,7 +142,7 @@ function SignIn() {
     );
   }
 
-  // Handle error state - Early return for cleaner code
+
   if (instituteError) {
     return (
       <DefaultAuth illustrationBackground={illustration} image={illustration}>
@@ -157,7 +157,7 @@ function SignIn() {
     );
   }
 
-  // Main render - Clean and organized
+
   return (
     <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
@@ -200,7 +200,7 @@ function SignIn() {
           me="auto"
           mb={{ base: "20px", md: "auto" }}
         >
-          {/* Error Messages */}
+          {}
           {errors.length > 0 && (
             <Alert status="error" mb="20px" borderRadius="15px">
               <AlertIcon />
@@ -214,7 +214,7 @@ function SignIn() {
             </Alert>
           )}
 
-          {/* Institute Selection */}
+          {}
           <Box mb="25px">
             <FormLabel
               display="flex"
@@ -227,7 +227,7 @@ function SignIn() {
               Institute<Text color={brandStars}>*</Text>
             </FormLabel>
             <InstituteSelector />
-            {/* Show institute count and selection status */}
+            {}
             {institutes && (
               <Text fontSize="xs" color="gray.500" mt="4px">
                 {institutes.length} institutes available
@@ -240,7 +240,7 @@ function SignIn() {
             )}
           </Box>
 
-          {/* FORM STARTS HERE */}
+          {}
           <form onSubmit={handleSignIn}>
             <FormControl>
               <FormLabel
@@ -339,13 +339,13 @@ function SignIn() {
                 w="100%"
                 h="50"
                 mb="24px"
-                isDisabled={!currentInstitute} // Added: Disable if no institute selected
+                isDisabled={!currentInstitute}
               >
                 Sign In
               </Button>
             </FormControl>
           </form>
-          {/* FORM ENDS HERE */}
+          {}
 
           <Flex
             flexDirection="column"

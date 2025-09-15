@@ -43,9 +43,9 @@ import {
 } from "react-icons/md";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useInstitute } from "../../../contexts/InstituteContext";
-import { useCarbon } from "../../../contexts/CarbonContext"; // ✅ Use your Carbon context
+import { useCarbon } from "../../../contexts/CarbonContext";
 
-// Blockchain Transaction Component
+
 const BlockchainTransaction = ({ transaction, index }) => {
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
@@ -77,7 +77,7 @@ const BlockchainTransaction = ({ transaction, index }) => {
     return 'red.500';
   };
 
-  // ✅ Calculate progress based on status and confirmations
+
   const progress = transaction.status === 'verified' ? 100 : 
                   transaction.status === 'pending' ? 50 : 
                   transaction.confirmations ? Math.min(100, transaction.confirmations * 10) : 0;
@@ -175,7 +175,7 @@ const BlockchainTransaction = ({ transaction, index }) => {
           colorScheme="blue" 
           variant="ghost"
           onClick={() => {
-            // Show transaction details
+
             const details = {
               id: transaction._id,
               type: transaction.type,
@@ -197,25 +197,25 @@ const BlockchainTransaction = ({ transaction, index }) => {
 };
 
 export default function EmissionsData() {
-  // Chakra Color Mode
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const brandColor = useColorModeValue("green.400", "green.300");
 
-  // Context hooks
+
   const { user, isAuthenticated } = useAuth();
   const { currentInstitute } = useInstitute();
-  const { getTransactionHistory, carbonBalance } = useCarbon(); // ✅ Use Carbon context
+  const { getTransactionHistory, carbonBalance } = useCarbon();
   const toast = useToast();
 
-  // State management
+
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [error, setError] = useState(null);
 
-  // ✅ UPDATED: Fetch transactions using Carbon context
+
   const fetchTransactions = async () => {
     setIsLoading(true);
     setError(null);
@@ -228,12 +228,12 @@ export default function EmissionsData() {
       console.log('  👤 User:', user?.email);
       console.log('  🏫 Current institute:', currentInstitute?.name || user?.institute);
       
-      // Check authentication
+
       if (!isAuthenticated || !user) {
         throw new Error('Please log in to view transactions');
       }
       
-      // Get institute ID
+
       const instituteId = currentInstitute?.name || user?.institute || 'default';
       
       if (!instituteId || instituteId === 'default') {
@@ -242,7 +242,7 @@ export default function EmissionsData() {
       
       console.log('  🎯 Fetching for institute:', instituteId);
       
-      // ✅ Use Carbon context method
+
       const transactionData = await getTransactionHistory(100, 0);
       
       console.log('📊 Raw transaction data:', transactionData);
@@ -260,14 +260,14 @@ export default function EmissionsData() {
         return;
       }
 
-      // ✅ Format transactions for display
+
       const formattedTransactions = transactionData.map((tx, index) => ({
         id: tx._id || tx.id || `tx-${index}`,
         _id: tx._id || tx.id || `tx-${index}`,
         type: tx.type || 'unknown_transaction',
-        status: tx.status || 'verified', // Default to verified for MongoDB data
+        status: tx.status || 'verified',
         date: tx.date || tx.createdAt || new Date().toISOString(),
-        confirmations: tx.confirmations || 10, // Default high confirmations
+        confirmations: tx.confirmations || 10,
         amount: parseFloat(tx.amount) || 0,
         blockchainTxHash: tx.blockchainTxHash || null,
         description: tx.description || '',
@@ -276,13 +276,13 @@ export default function EmissionsData() {
         institute: tx.institute || tx.instituteId || instituteId
       }));
 
-      // Sort by date (newest first)
+
       formattedTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
       
       console.log('✅ Formatted transactions:', formattedTransactions.length);
       setTransactions(formattedTransactions);
       
-      // Show success toast
+
       toast({
         title: "Transactions Loaded",
         description: `Successfully loaded ${formattedTransactions.length} transactions`,
@@ -296,7 +296,7 @@ export default function EmissionsData() {
       setError(err.message);
       setTransactions([]);
       
-      // Show error toast
+
       toast({
         title: "Failed to Load Transactions",
         description: err.message,
@@ -305,7 +305,7 @@ export default function EmissionsData() {
         isClosable: true,
       });
       
-      // If it's an auth error, redirect to login
+
       if (err.message.includes('Authentication') || err.message.includes('log in')) {
         setTimeout(() => {
           window.location.href = '/auth/sign-in';
@@ -316,7 +316,7 @@ export default function EmissionsData() {
     }
   };
 
-  // ✅ Load transactions when component mounts or dependencies change
+
   useEffect(() => {
     console.log('🔄 useEffect triggered:', {
       isAuthenticated,
@@ -354,7 +354,7 @@ export default function EmissionsData() {
       return;
     }
 
-    // Create CSV content
+
     const csvHeaders = ['Type', 'Status', 'Date', 'Amount', 'Description', 'Building', 'Hash'];
     const csvData = transactions.map(tx => [
       tx.type,
@@ -370,7 +370,7 @@ export default function EmissionsData() {
       .map(row => row.map(cell => `"${cell}"`).join(','))
       .join('\n');
     
-    // Download CSV
+
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -390,7 +390,7 @@ export default function EmissionsData() {
     });
   };
 
-  // Show login prompt if not authenticated
+
   if (!isAuthenticated) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }} textAlign="center">
@@ -408,7 +408,7 @@ export default function EmissionsData() {
     );
   }
 
-  // Calculate summary stats
+
   const totalTransactions = transactions.length;
   const verifiedTransactions = transactions.filter(tx => tx.status === 'verified').length;
   const totalValue = transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
@@ -421,7 +421,7 @@ export default function EmissionsData() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      {/* Header Section */}
+      {}
       <Flex justify="space-between" align="center" mb="30px">
         <Box>
           <Heading color={textColor} fontSize="4xl" fontWeight="bold" mb="2">
@@ -463,7 +463,7 @@ export default function EmissionsData() {
         </HStack>
       </Flex>
 
-      {/* Summary Stats */}
+      {}
       <SimpleGrid columns={{ base: 1, md: 4 }} gap="20px" mb="30px">
         <Card bg={cardBg} borderColor={borderColor} p="20px">
           <Stat textAlign="center">
@@ -518,7 +518,7 @@ export default function EmissionsData() {
         </Card>
       </SimpleGrid>
 
-      {/* Main Blockchain Transactions Table */}
+      {}
       <Card bg={cardBg} borderColor={borderColor}>
         <CardHeader>
           <HStack justify="space-between" align="center">

@@ -1,4 +1,4 @@
-// Chakra Imports
+
 import {
   Avatar,
   Button,
@@ -12,17 +12,17 @@ import {
   useColorModeValue,
   useColorMode,
 } from '@chakra-ui/react';
-// Custom Components
+
 import { SidebarResponsive } from 'components/sidebar/Sidebar';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// Assets
+
 import { IoMdMoon, IoMdSunny } from 'react-icons/io';
 import { FaEthereum } from 'react-icons/fa';
 import routes from 'routes';
 
-// Custom imports
+
 import { useAuth } from 'contexts/AuthContext';
 import { generateInitials, getDisplayName } from 'utils/userUtils';
 export default function HeaderLinks(props) {
@@ -31,21 +31,21 @@ export default function HeaderLinks(props) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Handle logout
+
   const handleLogout = () => {
-    // Clear any stored authentication data (localStorage, sessionStorage, etc.)
+
     localStorage.clear();
     sessionStorage.clear();
     
-    // Redirect to sign in page
+
     navigate('/auth/sign-in');
   };
 
-  // Handle profile settings navigation
+
   const handleProfileSettings = () => {
     navigate('/admin/profile');
   };
-  // Chakra Color Mode
+
   const navbarIcon = useColorModeValue('gray.400', 'white');
   let menuBg = useColorModeValue('white', 'navy.800');
   const textColor = useColorModeValue('secondaryGray.900', 'white');

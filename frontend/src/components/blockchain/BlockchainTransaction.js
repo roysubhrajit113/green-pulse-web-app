@@ -1,4 +1,4 @@
-// components/BlockchainLedger.js
+
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -75,7 +75,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     onClose: onDetailClose
   } = useDisclosure();
 
-  // ✅ Load transaction data
+
   const loadTransactions = async () => {
     try {
       setLoading(true);
@@ -96,14 +96,14 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     }
   };
 
-  // Load data when modal opens
+
   useEffect(() => {
     if (isOpen) {
       loadTransactions();
     }
   }, [isOpen]);
 
-  // ✅ Filter transactions based on search and type
+
   const filteredTransactions = transactions.filter(tx => {
     const matchesSearch = searchTerm === '' || 
       tx.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,7 +115,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     return matchesSearch && matchesType;
   });
 
-  // ✅ Get status properties
+
   const getStatusProps = (status) => {
     switch (status) {
       case 'verified':
@@ -129,7 +129,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     }
   };
 
-  // ✅ Get transaction type display
+
   const getTypeDisplay = (type) => {
     switch (type) {
       case 'carbon_offset_purchase':
@@ -145,14 +145,14 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     }
   };
 
-  // ✅ Handle transaction verification
+
   const handleVerifyTransaction = async (txHash) => {
     try {
       setLoading(true);
       const result = await verifyTransaction(txHash);
       
       if (result.success) {
-        // Update transaction status in local state
+
         setTransactions(prev => prev.map(tx => 
           tx.blockchainTxHash === txHash 
             ? { ...tx, verified: result.verified, confirmations: result.confirmations }
@@ -166,7 +166,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
     }
   };
 
-  // ✅ Show transaction details
+
   const showTransactionDetails = (transaction) => {
     setSelectedTransaction(transaction);
     onDetailOpen();
@@ -174,7 +174,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
 
   return (
     <>
-      {/* ✅ Main Ledger Modal */}
+      {}
       <Modal isOpen={isOpen} onClose={onClose} size="6xl">
         <ModalOverlay />
         <ModalContent bg={cardBg} maxH="80vh">
@@ -206,7 +206,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
           
           <ModalBody pb="24px">
             <VStack spacing="20px" align="stretch">
-              {/* ✅ Filters and Search */}
+              {}
               <HStack spacing="4">
                 <InputGroup maxW="300px">
                   <InputLeftElement>
@@ -232,7 +232,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
                 </Select>
               </HStack>
 
-              {/* ✅ Transaction Statistics */}
+              {}
               <HStack spacing="4" p="4" bg="gray.50" borderRadius="md">
                 <Stat textAlign="center">
                   <Text fontSize="sm" color="gray.600">Total Transactions</Text>
@@ -256,7 +256,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
                 </Stat>
               </HStack>
 
-              {/* ✅ Transactions Table */}
+              {}
               {loading ? (
                 <Flex justify="center" py="8">
                   <VStack>
@@ -395,7 +395,7 @@ export default function BlockchainLedger({ isOpen, onClose }) {
         </ModalContent>
       </Modal>
 
-      {/* ✅ Transaction Details Modal */}
+      {}
       <Modal isOpen={isDetailOpen} onClose={onDetailClose} size="md">
         <ModalOverlay />
         <ModalContent bg={cardBg}>

@@ -11,7 +11,7 @@ async function verifyUniqueData() {
     console.log(`Checking ${institutes.length} institutes for unique data:\n`);
 
     for (const institute of institutes) {
-      // Get sample data for this institute
+
       const sampleData = await CarbonBiometric.getDashboardData(institute);
       const departmentData = await CarbonBiometric.getDepartmentData(institute);
       

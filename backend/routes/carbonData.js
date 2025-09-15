@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const CarbonTransaction = require('../models/CarbonTransaction'); // You'll need this model
+const CarbonTransaction = require('../models/CarbonTransaction');
 
-// Middlewares
+
 const { authenticateToken } = require('../middleware/auth');
 const { instituteFilter } = require('../middleware/instituteAuth');
 
-// Controllers (keep your existing ones)
+
 const {
   getDashboardData,
   updateWalletBalance,
@@ -16,18 +16,18 @@ const {
   getInstituteAnalytics
 } = require('../controllers/carbonDataController');
 
-// Services
+
 const blockchainService = require('../services/blockchainService');
 
-// ---------------------------------------------------
-// 🔐 Apply authentication + institute filtering to ALL routes
-// ---------------------------------------------------
+
+
+
 router.use(authenticateToken);
 router.use(instituteFilter);
 
-// ---------------------------------------------------
-// Carbon Data Routes (Your existing routes)
-// ---------------------------------------------------
+
+
+
 router.get('/dashboard', getDashboardData);
 router.get('/weekly-energy', getWeeklyEnergyData);
 router.put('/wallet-balance', updateWalletBalance);
@@ -35,12 +35,12 @@ router.post('/carbon-offset', purchaseCarbonOffset);
 router.post('/energy-consumption', recordEnergyConsumption);
 router.get('/institute-analytics', getInstituteAnalytics);
 
-// ---------------------------------------------------
-// 🚨 MISSING ENDPOINTS - These are what your frontend needs
-// ---------------------------------------------------
 
-// GET /api/carbon-data/transactions/:instituteId
-// Get transaction history for an institute
+
+
+
+
+
 router.get('/transactions/:instituteId', async (req, res) => {
   try {
     const { instituteId } = req.params;
@@ -48,7 +48,7 @@ router.get('/transactions/:instituteId', async (req, res) => {
     
     console.log(`Fetching transaction history for: ${instituteId}`);
     
-    // Query your CarbonTransaction model or create mock data
+
     const transactions = await CarbonTransaction.find({ 
       $or: [
         { instituteId: instituteId },
@@ -84,8 +84,8 @@ router.get('/transactions/:instituteId', async (req, res) => {
   }
 });
 
-// GET /api/carbon-data/ento-transactions/:instituteId
-// Get ENTO token transactions for an institute
+
+
 router.get('/ento-transactions/:instituteId', async (req, res) => {
   try {
     const { instituteId } = req.params;
@@ -130,15 +130,15 @@ router.get('/ento-transactions/:instituteId', async (req, res) => {
   }
 });
 
-// GET /api/carbon-data/balance/:instituteId
-// Get carbon credit balance for an institute
+
+
 router.get('/balance/:instituteId', async (req, res) => {
   try {
     const { instituteId } = req.params;
     
     console.log(`Fetching balance for: ${instituteId}`);
     
-    // Calculate balance from transactions
+
     const transactions = await CarbonTransaction.find({ 
       $or: [
         { instituteId: instituteId },
@@ -170,8 +170,8 @@ router.get('/balance/:instituteId', async (req, res) => {
   }
 });
 
-// GET /api/carbon-data/verify-transaction/:txHash
-// Verify a blockchain transaction
+
+
 router.get('/verify-transaction/:txHash', async (req, res) => {
   try {
     const { txHash } = req.params;
@@ -211,21 +211,21 @@ router.get('/verify-transaction/:txHash', async (req, res) => {
   }
 });
 
-// Replace the POST /api/carbon-data/blockchain/submit-transaction route with:
 
-// POST /api/carbon-data/transaction
-// Submit transaction directly to database
+
+
+
 router.post('/transactions', async (req, res) => {
   try {
     const transactionData = req.body;
     
     console.log('Submitting transaction to blockchain:', transactionData);
     
-    // Create and save transaction
+
     const newTransaction = new CarbonTransaction({
       ...transactionData,
       instituteId: transactionData.instituteId || req.userInstitute || req.user.institute,
-      status: 'verified', // Mark as verified immediately since we're not using blockchain
+      status: 'verified',
       date: new Date()
     });
     
@@ -246,12 +246,12 @@ router.post('/transactions', async (req, res) => {
   }
 });
 
-// ---------------------------------------------------
-// Updated Blockchain Routes (Your existing ones improved)
-// ---------------------------------------------------
 
-// POST /api/carbon-data/blockchain/transaction
-// Store blockchain transaction in MongoDB
+
+
+
+
+
 router.post('/blockchain/transaction', async (req, res) => {
   try {
     const { type, amount, description, building, consumption, blockchainTxHash } = req.body;
@@ -286,8 +286,8 @@ router.post('/blockchain/transaction', async (req, res) => {
   }
 });
 
-// GET /api/carbon-data/blockchain/transaction/:txHash
-// Get transaction by hash (Your existing route)
+
+
 router.get('/blockchain/transaction/:txHash', async (req, res) => {
   try {
     const { txHash } = req.params;

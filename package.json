@@ -25,10 +25,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AnshTheCoder07/green-pulse--dashboard-edit.git"
+    "url": "git+https://github.com/username/energy-token.git"
   },
   "bugs": {
-    "url": "https://github.com/AnshTheCoder07/green-pulse--dashboard-edit/issues"
+    "url": "https://github.com/username/energy-token/issues"
   },
-  "homepage": "https://github.com/AnshTheCoder07/green-pulse--dashboard-edit#readme"
+  "homepage": "https://github.com/username/energy-token#readme"
 }

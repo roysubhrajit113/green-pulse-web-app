@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 
 import {
   Flex,
@@ -22,13 +22,13 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-// Custom components
+
 import Card from 'components/card/CarbonCard';
 import Menu from 'components/menu/MainMenu';
 
 const columnHelper = createColumnHelper();
 
-// const columns = columnsDataCheck;
+
 export default function ColumnTable(props) {
   const { tableData } = props;
   const [sorting, setSorting] = React.useState([]);

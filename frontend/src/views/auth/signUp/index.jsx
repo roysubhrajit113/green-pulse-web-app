@@ -1,4 +1,4 @@
-// frontend/src/views/auth/signUp/index.jsx
+
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
@@ -33,7 +33,7 @@ function SignUp() {
   const { currentInstitute } = useInstitute();
   const { register, loading } = useAuth();
 
-  // Form state
+
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -45,7 +45,7 @@ function SignUp() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  // Chakra color mode
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
   const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
@@ -61,7 +61,7 @@ function SignUp() {
       ...prev,
       [name]: value
     }));
-    // Clear errors when user starts typing
+
     if (errors.length > 0) {
       setErrors([]);
     }
@@ -71,7 +71,7 @@ function SignUp() {
     event.preventDefault();
     setErrors([]);
 
-    // Validation checks
+
     const validationErrors = [];
     
     if (!currentInstitute) {
@@ -107,7 +107,7 @@ function SignUp() {
           isClosable: true,
         });
         
-        // Redirect to dashboard
+
         navigate('/admin/dashboard');
       }
     } catch (error) {
@@ -175,7 +175,7 @@ function SignUp() {
             me="auto"
             mb={{ base: "20px", md: "auto" }}
           >
-            {/* Error Messages */}
+            {}
             {errors.length > 0 && (
               <Alert status="error" mb="20px" borderRadius="15px">
                 <AlertIcon />
@@ -189,7 +189,7 @@ function SignUp() {
               </Alert>
             )}
 
-            {/* Institute Selection */}
+            {}
             <Box mb="20px">
               <FormLabel
                 display="flex"
@@ -204,7 +204,7 @@ function SignUp() {
               <InstituteSelector />
             </Box>
             
-            {/* FORM STARTS HERE */}
+            {}
             <form onSubmit={handleSignUp}>
               <FormControl>
                 <FormLabel
@@ -358,7 +358,7 @@ function SignUp() {
                 </Button>
               </FormControl>
             </form>
-            {/* FORM ENDS HERE */}
+            {}
             
             <Flex
               flexDirection="column"

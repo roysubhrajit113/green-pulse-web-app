@@ -8,7 +8,7 @@ import {
   MdEmojiEvents,
 } from 'react-icons/md';
 
-// Use folder names—these will use the index.jsx in each folder
+
 import MainDashboard from 'views/admin/default';
 
 import DataTables from 'views/admin/dataTables';

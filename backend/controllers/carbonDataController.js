@@ -4,9 +4,7 @@ const EnergyConsumption = require('../models/EnergyConsumption');
 const User = require('../models/User');
 const { createInstituteFilter, getInstituteDisplayName } = require('../middleware/instituteAuth');
 
-/**
- * Get dashboard data for a specific user's institute from real MongoDB data
- */
+
 const getDashboardData = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -21,34 +19,34 @@ const getDashboardData = async (req, res) => {
       });
     }
 
-    // Get institute display name (handle both string and object formats)
+
     const instituteDisplayName = getInstituteDisplayName(userInstitute);
     console.log('Institute display name:', instituteDisplayName);
     
-    // Convert institute to string for database queries
+
     const instituteNameForQuery = typeof userInstitute === 'object' && userInstitute.name 
       ? userInstitute.name 
       : String(userInstitute);
     
     console.log('Institute name for query:', instituteNameForQuery);
 
-    // Get real carbon biometric data from MongoDB using string name
+
     const carbonBiometricData = await CarbonBiometric.getDashboardData(instituteNameForQuery);
     console.log('Carbon biometric data:', carbonBiometricData);
 
-    // Get monthly trends from real data
+
     const monthlyTrends = await CarbonBiometric.getMonthlyTrends(instituteNameForQuery, 6);
     console.log('Monthly trends:', monthlyTrends);
 
-    // Get department data from real energy consumption data
+
     const departmentData = await CarbonBiometric.getDepartmentData(instituteNameForQuery);
     console.log('Department data:', departmentData);
 
-    // Get building data from real energy consumption data
+
     const buildingData = await CarbonBiometric.getBuildingData(instituteNameForQuery);
     console.log('Building data:', buildingData);
 
-    // Only return data if real MongoDB data exists
+
     if (!carbonBiometricData || carbonBiometricData.length === 0) {
       return res.status(404).json({
         success: false,
@@ -56,16 +54,16 @@ const getDashboardData = async (req, res) => {
       });
     }
 
-    // Use only real data from MongoDB
+
     const biometric = carbonBiometricData[0];
     
-    // Ensure we have real monthly trends data
+
     const realMonthlyTrends = monthlyTrends && monthlyTrends.length > 0 ? monthlyTrends : [];
     
-    // Ensure we have real building data
+
     const realBuildingData = buildingData && buildingData.length > 0 ? buildingData : [];
     
-    // Ensure we have real department data
+
     const realDepartmentData = departmentData && departmentData.length > 0 ? departmentData : [];
     
     const dashboardData = {
@@ -77,18 +75,18 @@ const getDashboardData = async (req, res) => {
       offsetsPurchased: biometric.offsetsPurchased || 0,
       currentEnergyConsumption: biometric.currentEnergyConsumption || 0,
       
-      // Only real monthly energy consumption data
+
       monthlyEnergyConsumption: realMonthlyTrends,
       
-      // Only real building data
+
       buildingData: realBuildingData,
       
-      // Only real department data
+
       departmentData: realDepartmentData,
       
       analytics: {
         totalReductionInitiatives: biometric.totalReductionInitiatives || 0,
-        carbonValue: Math.round(biometric.co2Savings * 100) || 0 // Calculate from real CO2 savings
+        carbonValue: Math.round(biometric.co2Savings * 100) || 0
       },
       
       dataSource: 'mongodb',
@@ -113,9 +111,7 @@ const getDashboardData = async (req, res) => {
   }
 };
 
-/**
- * Update wallet balance for institute-specific user data
- */
+
 const updateWalletBalance = async (req, res) => {
   try {
     const { amount, type } = req.body;
@@ -141,14 +137,14 @@ const updateWalletBalance = async (req, res) => {
       });
     }
 
-    // Update wallet balance
+
     if (type === 'credit') {
       carbonData.walletBalance += amount;
     } else {
       carbonData.walletBalance = Math.max(0, carbonData.walletBalance - amount);
     }
 
-    // Add transaction record
+
     carbonData.transactions.push({
       type,
       amount,
@@ -175,9 +171,7 @@ const updateWalletBalance = async (req, res) => {
   }
 };
 
-/**
- * Purchase carbon offset
- */
+
 const purchaseCarbonOffset = async (req, res) => {
   try {
     const { amount, description } = req.body;
@@ -203,7 +197,7 @@ const purchaseCarbonOffset = async (req, res) => {
       });
     }
 
-    // Check if user has sufficient balance
+
     if (carbonData.walletBalance < amount) {
       return res.status(400).json({
         success: false,
@@ -211,21 +205,21 @@ const purchaseCarbonOffset = async (req, res) => {
       });
     }
 
-    // Calculate CO2 impact
-    const co2Impact = amount * 0.1; // Mock calculation
 
-    // Update data
+    const co2Impact = amount * 0.1;
+
+
     carbonData.walletBalance -= amount;
     carbonData.offsetsPurchased += amount;
     carbonData.co2Savings += co2Impact;
 
-    // Add transaction record
+
     carbonData.transactions.push({
       type: 'offset_purchase',
       amount,
       description: description || 'Carbon offset purchase',
       co2Impact,
-      blockchainTxHash: `0x${Math.random().toString(16).substr(2, 64)}`, // Mock hash
+      blockchainTxHash: `0x${Math.random().toString(16).substr(2, 64)}`,
       date: new Date()
     });
 
@@ -250,9 +244,7 @@ const purchaseCarbonOffset = async (req, res) => {
   }
 };
 
-/**
- * Record energy consumption
- */
+
 const recordEnergyConsumption = async (req, res) => {
   try {
     const { consumption, building } = req.body;
@@ -278,14 +270,14 @@ const recordEnergyConsumption = async (req, res) => {
       });
     }
 
-    // Calculate cost (mock: 0.05 ENTO per kWh)
+
     const cost = consumption * 0.05;
 
-    // Update energy consumption
+
     carbonData.currentEnergyConsumption += consumption;
     carbonData.carbonBudgetUsed += cost;
 
-    // Update building data if specified
+
     if (building) {
       const buildingIndex = carbonData.buildingData.findIndex(b => b.buildingName === building);
       if (buildingIndex >= 0) {
@@ -294,14 +286,14 @@ const recordEnergyConsumption = async (req, res) => {
       }
     }
 
-    // Add transaction record
+
     carbonData.transactions.push({
       type: 'energy_consumption',
       amount: cost,
       description: `Energy consumption in ${building || 'Building A'}`,
       building: building || 'Building A',
       consumption,
-      blockchainTxHash: `0x${Math.random().toString(16).substr(2, 64)}`, // Mock hash
+      blockchainTxHash: `0x${Math.random().toString(16).substr(2, 64)}`,
       date: new Date()
     });
 
@@ -326,14 +318,12 @@ const recordEnergyConsumption = async (req, res) => {
   }
 };
 
-/**
- * ✅ ENHANCED: Get weekly energy consumption data for charts with better fallback
- */
+
 const getWeeklyEnergyData = async (req, res) => {
   try {
     const userInstitute = req.userInstitute;
     
-    // Convert institute to string for database queries
+
     const instituteNameForQuery = typeof userInstitute === 'object' && userInstitute.name 
       ? userInstitute.name 
       : String(userInstitute);
@@ -342,11 +332,11 @@ const getWeeklyEnergyData = async (req, res) => {
     
     const instituteDisplayName = getInstituteDisplayName(userInstitute);
     
-    // Get data from the last 7 days
+
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 7);
     
-    // ✅ ENHANCED: First check if we have any data at all
+
     const testQuery = await CarbonBiometric.find({
       institute: instituteNameForQuery
     }).limit(5);
@@ -354,7 +344,7 @@ const getWeeklyEnergyData = async (req, res) => {
     console.log('📊 Data availability check:', testQuery.length, 'documents found');
     
     if (testQuery.length === 0) {
-      // ✅ Return realistic sample data for testing instead of 404
+
       console.log('⚠️ No real data found, returning sample data for testing');
       
       const sampleData = [
@@ -395,7 +385,7 @@ const getWeeklyEnergyData = async (req, res) => {
       });
     }
     
-    // ✅ Try the complex aggregation if data exists
+
     const weeklyData = await CarbonBiometric.aggregate([
       {
         $match: {
@@ -431,7 +421,7 @@ const getWeeklyEnergyData = async (req, res) => {
           departmentName: '$_id',
           data: {
             $map: {
-              input: [2, 3, 4, 5, 6, 7, 1], // ✅ FIXED: Monday=2 to Sunday=1 order
+              input: [2, 3, 4, 5, 6, 7, 1],
               as: 'day',
               in: {
                 $let: {
@@ -448,7 +438,7 @@ const getWeeklyEnergyData = async (req, res) => {
                     }
                   },
                   in: {
-                    $ifNull: ['$$dayData.consumption', { $add: [150, { $multiply: [{ $rand: {} }, 100] }] }] // ✅ Random realistic data
+                    $ifNull: ['$$dayData.consumption', { $add: [150, { $multiply: [{ $rand: {} }, 100] }] }]
                   }
                 }
               }
@@ -464,12 +454,12 @@ const getWeeklyEnergyData = async (req, res) => {
     
     console.log('📊 Aggregation results:', weeklyData.length, 'departments');
     
-    // ✅ ENHANCED: Format data properly with institute name
+
     const formattedData = weeklyData.length > 0 ? weeklyData.map(dept => ({
       name: `${instituteDisplayName} - ${dept.departmentName || 'Unknown Department'}`,
       data: dept.data && dept.data.length === 7 ? 
         dept.data : 
-        [150, 160, 170, 165, 175, 180, 155] // Fallback realistic data
+        [150, 160, 170, 165, 175, 180, 155]
     })) : [
       {
         name: `${instituteDisplayName} - Sample Department 1`,
@@ -504,7 +494,7 @@ const getWeeklyEnergyData = async (req, res) => {
   } catch (error) {
     console.error('❌ Get weekly energy data error:', error);
     
-    // ✅ ENHANCED: Return fallback data instead of error
+
     const instituteDisplayName = getInstituteDisplayName(req.userInstitute || 'Default Institute');
     
     const fallbackData = [
@@ -531,19 +521,17 @@ const getWeeklyEnergyData = async (req, res) => {
   }
 };
 
-/**
- * Get institute-specific analytics
- */
+
 const getInstituteAnalytics = async (req, res) => {
   try {
     const userInstitute = req.userInstitute;
     
-    // Convert institute to string for database queries
+
     const instituteNameForQuery = typeof userInstitute === 'object' && userInstitute.name 
       ? userInstitute.name 
       : String(userInstitute);
     
-    // Get aggregated data for the institute
+
     const instituteData = await CarbonData.aggregate([
       { $match: createInstituteFilter(userInstitute) },
       {

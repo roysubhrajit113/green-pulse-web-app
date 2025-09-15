@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# Load environment variables
+
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
@@ -14,7 +14,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 app = Flask(__name__)
-# Enable CORS for all routes
+
 CORS(app)
 
 model = genai.GenerativeModel("gemini-1.5-flash")
@@ -35,7 +35,7 @@ def chat():
         if not user_message:
             return jsonify({"response": "Please send a valid message."}), 400
 
-        # Enhanced prompt for Green Pulse context
+
         instruction = """You are a helpful AI assistant for Green Pulse, a carbon tracking and energy token platform. 
         Reply concisely, no more than 2-3 sentences. Focus on helping users with:
         - Carbon tracking and emissions

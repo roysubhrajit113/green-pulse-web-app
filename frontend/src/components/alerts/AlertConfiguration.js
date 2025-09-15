@@ -30,20 +30,20 @@ const AlertConfiguration = ({ onConfigSave }) => {
   const [config, setConfig] = useState({
     threshold: 1000,
     enableAutomaticChecks: true,
-    checkInterval: 5, // minutes
+    checkInterval: 5,
     emailNotifications: false,
     severityLevels: {
-      low: 1.0,    // 1x threshold
-      medium: 1.5,  // 1.5x threshold  
-      high: 2.0,    // 2x threshold
-      critical: 3.0  // 3x threshold
+      low: 1.0,
+      medium: 1.5,
+      high: 2.0,
+      critical: 3.0
     }
   });
   
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
-  // Load saved configuration from localStorage
+
   useEffect(() => {
     const savedConfig = localStorage.getItem('alertConfig');
     if (savedConfig) {
@@ -76,10 +76,10 @@ const AlertConfiguration = ({ onConfigSave }) => {
   const saveConfiguration = () => {
     setIsLoading(true);
     
-    // Save to localStorage
+
     localStorage.setItem('alertConfig', JSON.stringify(config));
     
-    // Call parent callback if provided
+
     if (onConfigSave) {
       onConfigSave(config);
     }
@@ -129,7 +129,7 @@ const AlertConfiguration = ({ onConfigSave }) => {
       </Flex>
 
       <VStack spacing={6} align="stretch">
-        {/* Basic Threshold Settings */}
+        {}
         <Card>
           <CardHeader pb={2}>
             <HStack>
@@ -166,7 +166,7 @@ const AlertConfiguration = ({ onConfigSave }) => {
           </CardBody>
         </Card>
 
-        {/* Severity Level Configuration */}
+        {}
         <Card>
           <CardHeader pb={2}>
             <HStack>
@@ -228,7 +228,7 @@ const AlertConfiguration = ({ onConfigSave }) => {
           </CardBody>
         </Card>
 
-        {/* Monitoring Settings */}
+        {}
         <Card>
           <CardHeader pb={2}>
             <Text fontSize="md" fontWeight="semibold">
@@ -288,7 +288,7 @@ const AlertConfiguration = ({ onConfigSave }) => {
 
         <Divider />
 
-        {/* Action Buttons */}
+        {}
         <HStack justify="space-between">
           <Button
             variant="outline"

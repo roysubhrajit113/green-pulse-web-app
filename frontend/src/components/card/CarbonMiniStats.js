@@ -7,9 +7,9 @@ import {
   useColorModeValue,
   Text,
 } from "@chakra-ui/react";
-// Custom components
+
 import Card from "components/card/CarbonCard.js";
-// Custom icons
+
 import React from "react";
 
 export default function Default(props) {

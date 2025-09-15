@@ -3,19 +3,17 @@ const MeterData = require('../models/MeterData');
 const Alert = require('../models/Alert');
 const User = require('../models/User');
 
-// Default threshold value
+
 const DEFAULT_THRESHOLD = 1000;
 
 class AlertService {
   constructor() {
     this.isRunning = false;
     this.intervalId = null;
-    this.checkInterval = 5 * 60 * 1000; // Check every 5 minutes
+    this.checkInterval = 5 * 60 * 1000;
   }
 
-  /**
-   * Start the alert monitoring service
-   */
+  
   start() {
     if (this.isRunning) {
       console.log('Alert service is already running');
@@ -25,10 +23,10 @@ class AlertService {
     console.log('Starting Alert Monitoring Service...');
     this.isRunning = true;
     
-    // Run initial check
+
     this.checkAllUsersForAlerts();
     
-    // Set up recurring checks
+
     this.intervalId = setInterval(() => {
       this.checkAllUsersForAlerts();
     }, this.checkInterval);
@@ -36,9 +34,7 @@ class AlertService {
     console.log(`Alert service started with ${this.checkInterval / 1000}s interval`);
   }
 
-  /**
-   * Stop the alert monitoring service
-   */
+  
   stop() {
     if (!this.isRunning) {
       console.log('Alert service is not running');
@@ -56,9 +52,7 @@ class AlertService {
     console.log('Alert service stopped');
   }
 
-  /**
-   * Check alerts for all users
-   */
+  
   async checkAllUsersForAlerts() {
     try {
       console.log('Checking alerts for all users...');
@@ -78,12 +72,10 @@ class AlertService {
     }
   }
 
-  /**
-   * Check alerts for a specific user
-   */
+  
   async checkUserForAlerts(userId, userInstitute, customThreshold = null) {
     try {
-      // Get the institute name
+
       const institute = typeof userInstitute === 'string' 
         ? userInstitute 
         : userInstitute?.name || userInstitute?.label;
@@ -95,7 +87,7 @@ class AlertService {
 
       const threshold = customThreshold || DEFAULT_THRESHOLD;
 
-      // Find all buildings for the user's institute
+
       const buildings = await Building.find({ institute: institute });
       
       if (buildings.length === 0) {
@@ -105,16 +97,16 @@ class AlertService {
 
       let alertsGenerated = 0;
 
-      // Check each building for meter readings above threshold
+
       for (const building of buildings) {
         try {
-          // Get the latest meter reading for this building
+
           const latestMeterData = await MeterData.findOne(
             { building_id: building.building_id }
           ).sort({ timestamp: -1 });
 
           if (latestMeterData && latestMeterData.meter_reading > threshold) {
-            // Check if alert already exists for this building
+
             const existingAlert = await Alert.findOne({
               user_id: userId,
               building_id: building.building_id,
@@ -122,7 +114,7 @@ class AlertService {
             });
 
             if (!existingAlert) {
-              // Determine severity based on how much the reading exceeds threshold
+
               let severity = 'medium';
               const exceedanceRatio = latestMeterData.meter_reading / threshold;
               
@@ -131,7 +123,7 @@ class AlertService {
               else if (exceedanceRatio > 1.5) severity = 'medium';
               else severity = 'low';
 
-              // Create new alert
+
               const newAlert = new Alert({
                 user_id: userId,
                 building_id: building.building_id,
@@ -163,9 +155,7 @@ class AlertService {
     }
   }
 
-  /**
-   * Manually trigger alert check for a specific user
-   */
+  
   async triggerUserAlertCheck(userId, customThreshold = null) {
     try {
       const user = await User.findById(userId).select('institute');
@@ -182,9 +172,7 @@ class AlertService {
     }
   }
 
-  /**
-   * Clean up old resolved alerts (older than 30 days)
-   */
+  
   async cleanupOldAlerts() {
     try {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -203,9 +191,7 @@ class AlertService {
     }
   }
 
-  /**
-   * Get service status
-   */
+  
   getStatus() {
     return {
       isRunning: this.isRunning,
@@ -215,6 +201,6 @@ class AlertService {
   }
 }
 
-// Export a singleton instance
+
 const alertService = new AlertService();
 module.exports = alertService;

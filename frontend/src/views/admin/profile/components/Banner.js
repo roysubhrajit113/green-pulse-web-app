@@ -1,11 +1,11 @@
-// Chakra imports
+
 import { Avatar, Box, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import Card from "components/card/CarbonCard.js";
 import React from "react";
 
 export default function Banner(props) {
   const { banner, avatar, name, job, posts, followers, following } = props;
-  // Chakra Color Mode
+
   const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = "gray.400";
   const borderColor = useColorModeValue(

@@ -30,7 +30,7 @@ import { useLocation } from 'react-router-dom';
 import chatbotService from '../../services/chatbotService';
 
 const Chatbot = () => {
-  // Changed: Set isOpen to true and isMinimized to true by default
+
   const [isOpen, setIsOpen] = useState(true);
   const [isMinimized, setIsMinimized] = useState(true);
   const [messages, setMessages] = useState([
@@ -48,7 +48,7 @@ const Chatbot = () => {
   const toast = useToast();
   const location = useLocation();
 
-  // Color mode values matching your theme
+
   const bg = useColorModeValue('white', 'navy.800');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textColor = useColorModeValue('navy.700', 'white');
@@ -58,7 +58,7 @@ const Chatbot = () => {
   const botMessageBg = useColorModeValue('gray.50', 'gray.700');
   const errorColor = useColorModeValue('red.500', 'red.300');
 
-  // Enhanced check for auth pages - more comprehensive
+
   const isAuthPage = 
     location.pathname === '/' ||
     location.pathname.includes('/auth/') || 
@@ -75,7 +75,7 @@ const Chatbot = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Check chatbot service availability on component mount
+
   useEffect(() => {
     const checkService = async () => {
       const isAvailable = await chatbotService.checkHealth();
@@ -113,13 +113,13 @@ const Chatbot = () => {
       let botResponse;
       
       if (isServiceAvailable) {
-        // Try to get response from backend AI service
+
         const result = await chatbotService.sendMessage(inputMessage);
         
         if (result.success) {
           botResponse = result.response;
         } else {
-          // Fallback to local responses if service fails
+
           botResponse = generateFallbackResponse(inputMessage);
           
           toast({
@@ -131,7 +131,7 @@ const Chatbot = () => {
           });
         }
       } else {
-        // Use fallback responses when service is unavailable
+
         botResponse = generateFallbackResponse(inputMessage);
       }
       
@@ -146,7 +146,7 @@ const Chatbot = () => {
     } catch (error) {
       console.error('Error sending message:', error);
       
-      // Fallback response on any error
+
       const fallbackResponse = generateFallbackResponse(inputMessage);
       const botMessage = {
         id: Date.now() + 1,
@@ -200,12 +200,12 @@ const Chatbot = () => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Don't render chatbot on auth pages
+
   if (isAuthPage) {
     return null;
   }
 
-  // Only render the AI box (no chat button)
+
   return (
     <Box
       position="fixed"
@@ -227,7 +227,7 @@ const Chatbot = () => {
         w="100%"
         transform="translateX(-20px)"
       >
-        {/* Header */}
+        {}
         <Box
           bg={brandBg}
           p="15px"
@@ -290,7 +290,7 @@ const Chatbot = () => {
 
         {!isMinimized && (
           <>
-            {/* Messages */}
+            {}
             <Box 
               h="320px" 
               overflowY="auto"
@@ -385,7 +385,7 @@ const Chatbot = () => {
 
             <Divider />
 
-            {/* Input */}
+            {}
             <Box p="15px">
               <HStack spacing="3">
                 <Textarea
@@ -425,7 +425,7 @@ const Chatbot = () => {
                 </Button>
               </HStack>
               
-              {/* Service Status Indicator */}
+              {}
               {!isServiceAvailable && (
                 <HStack spacing="2" mt="2" justify="center">
                   <Icon as={MdError} color={errorColor} w="12px" h="12px" />
@@ -439,7 +439,7 @@ const Chatbot = () => {
         )}
       </Box>
 
-      {/* Add option to show the chatbot again if it's closed */}
+      {}
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}

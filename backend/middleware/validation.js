@@ -1,4 +1,4 @@
-// backend/middleware/validation.js
+
 const validateRegistration = (req, res, next) => {
   const { institute, fullName, email, password, confirmPassword } = req.body;
   
@@ -6,7 +6,7 @@ const validateRegistration = (req, res, next) => {
   
   const errors = [];
   
-  // Check required fields with proper type checking
+
   if (!institute) {
     errors.push('Institute is required');
   } else if (typeof institute === 'object' && (!institute.name || !institute.id)) {
@@ -31,18 +31,18 @@ const validateRegistration = (req, res, next) => {
     errors.push('Confirm password is required');
   }
   
-  // Email validation
+
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (email && typeof email === 'string' && !emailRegex.test(email)) {
     errors.push('Please enter a valid email address');
   }
   
-  // Password validation
+
   if (password && password.length < 6) {
     errors.push('Password must be at least 6 characters long');
   }
   
-  // Password matching
+
   if (password && confirmPassword && password !== confirmPassword) {
     errors.push('Passwords do not match');
   }
@@ -70,7 +70,7 @@ const validateLogin = (req, res, next) => {
   
   const errors = [];
   
-  // Check institute
+
   if (!institute) {
     errors.push('Institute is required');
   } else if (typeof institute === 'object' && (!institute.name || !institute.id)) {
@@ -87,7 +87,7 @@ const validateLogin = (req, res, next) => {
     errors.push('Password is required');
   }
   
-  // Email validation
+
   const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
   if (email && typeof email === 'string' && !emailRegex.test(email)) {
     errors.push('Please enter a valid email address');

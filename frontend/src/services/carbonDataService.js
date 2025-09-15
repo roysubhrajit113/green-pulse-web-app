@@ -1,13 +1,13 @@
-// services/carbonDataService.js
+
 class CarbonDataService {
   constructor() {
     this.baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     this.carbonDataEndpoint = `${this.baseUrl}/carbon-data`;
   }
 
-  // ✅ FIXED: Helper method to get auth headers with 'authToken' key
+
   getAuthHeaders() {
-    const token = localStorage.getItem('authToken'); // ✅ Using 'authToken'
+    const token = localStorage.getItem('authToken');
     
     console.log('🔑 Getting auth headers:');
     console.log('  Token present:', !!token);
@@ -19,7 +19,7 @@ class CarbonDataService {
     };
   }
 
-  // ✅ NEW: Get transaction history from MongoDB
+
   async getTransactionHistory(instituteId, limit = 50, offset = 0) {
     try {
       const url = `${this.carbonDataEndpoint}/transactions/${instituteId}?limit=${limit}&offset=${offset}`;
@@ -44,7 +44,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ NEW: Get ENTO token transactions
+
   async getEntoTransactions(instituteId, limit = 50, offset = 0) {
     try {
       const url = `${this.carbonDataEndpoint}/ento-transactions/${instituteId}?limit=${limit}&offset=${offset}`;
@@ -69,7 +69,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ NEW: Get carbon credit balance
+
   async getCarbonBalance(instituteId) {
     try {
       const url = `${this.carbonDataEndpoint}/balance/${instituteId}`;
@@ -94,7 +94,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ NEW: Verify blockchain transaction
+
   async verifyTransaction(txHash) {
     try {
       const url = `${this.carbonDataEndpoint}/verify-transaction/${txHash}`;
@@ -119,7 +119,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ NEW: Submit transaction to database
+
   async submitTransaction(transactionData) {
     try {
       const url = `${this.carbonDataEndpoint}/transactions`;
@@ -145,7 +145,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Complete getWeeklyEnergyData method with proper fetch and error handling
+
   async getWeeklyEnergyData() {
     try {
       const url = `${this.carbonDataEndpoint}/weekly-energy`;
@@ -161,7 +161,7 @@ class CarbonDataService {
       if (!response.ok) {
         if (response.status === 401) {
           console.error('❌ Unauthorized - token may be invalid or expired');
-          // Clear invalid token using 'authToken' key
+
           localStorage.removeItem('authToken');
           localStorage.removeItem('userData');
         }
@@ -191,7 +191,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Enhanced fallback data with more realistic values
+
   getFallbackWeeklyEnergyData() {
     return [
       {
@@ -222,7 +222,7 @@ class CarbonDataService {
     ];
   }
 
-  // ✅ NEW: Fallback transactions for testing
+
   getFallbackTransactions() {
     return [
       {
@@ -253,7 +253,7 @@ class CarbonDataService {
     ];
   }
 
-  // ✅ Get dashboard data from backend API (institute-filtered)
+
   async getDashboardData() {
     try {
       const response = await fetch(`${this.carbonDataEndpoint}/dashboard`, {
@@ -277,7 +277,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Update wallet balance through API
+
   async updateWalletBalance(amount, type = 'credit') {
     try {
       const response = await fetch(`${this.carbonDataEndpoint}/wallet-balance`, {
@@ -302,7 +302,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Purchase carbon offset through API
+
   async purchaseCarbonOffset(amount, description = 'Carbon offset purchase') {
     try {
       const response = await fetch(`${this.carbonDataEndpoint}/carbon-offset`, {
@@ -327,7 +327,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Record energy consumption through API
+
   async recordEnergyConsumption(consumption, building = 'Building A') {
     try {
       const response = await fetch(`${this.carbonDataEndpoint}/energy-consumption`, {
@@ -352,7 +352,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Legacy compatibility methods
+
   async getEnergyConsumptionData() {
     try {
       const dashboardData = await this.getDashboardData();
@@ -402,7 +402,7 @@ class CarbonDataService {
     }
   }
 
-  // ✅ Mock blockchain integration
+
   async submitToBlockchain(transaction) {
     try {
       console.log('Submitting to blockchain:', transaction);
@@ -432,7 +432,7 @@ class CarbonDataService {
   }
 }
 
-// ✅ FIXED: Create singleton instance WITHOUT calling .init()
+
 const carbonDataService = new CarbonDataService();
 
 export default carbonDataService;

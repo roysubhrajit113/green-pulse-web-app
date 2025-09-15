@@ -4,16 +4,16 @@ const mongoose = require('mongoose');
 const { authenticateToken } = require('../middleware/auth');
 const { instituteFilter } = require('../middleware/instituteAuth');
 
-// Models
+
 const CarbonTransaction = require('../models/CarbonTransaction');
 const EnergyPack = require('../models/EnergyPack');
 const Loan = require('../models/Loan');
 
-// Apply authentication to all routes
+
 router.use(authenticateToken);
 router.use(instituteFilter);
 
-// Helper function to generate mock blockchain data
+
 const generateBlockchainData = () => {
   return {
     blockchainTxHash: `0x${Math.random().toString(16).substr(2, 40)}`,
@@ -23,11 +23,11 @@ const generateBlockchainData = () => {
   };
 };
 
-// ✅ GET /api/wallet/data - Fetch user's wallet data
+
 router.get('/data', async (req, res) => {
   try {
     const userId = req.user._id;
-    const institute = req.userInstitute; // Now always a string
+    const institute = req.userInstitute;
     
     console.log('🔍 Fetching wallet data:', {
       userId: userId.toString(),
@@ -35,7 +35,7 @@ router.get('/data', async (req, res) => {
       instituteType: typeof institute
     });
 
-    // Get active energy pack with proper string matching
+
     const energyPack = await EnergyPack.findOne({
       userId,
       institute,
@@ -44,7 +44,7 @@ router.get('/data', async (req, res) => {
 
     console.log('🔍 Energy pack query result:', energyPack ? 'Found' : 'Not found');
     
-    // Also try a broader search to debug existing data
+
     const allUserPacks = await EnergyPack.find({ userId });
     console.log('🔍 All user energy packs:', allUserPacks.map(pack => ({
       id: pack._id,
@@ -53,14 +53,14 @@ router.get('/data', async (req, res) => {
       status: pack.status
     })));
 
-    // Get active loan
+
     const loan = await Loan.findOne({
       userId,
       institute,
       status: 'active'
     }).sort({ createdAt: -1 });
 
-    // Calculate balance from transactions
+
     const transactions = await CarbonTransaction.find({
       userId,
       institute
@@ -98,7 +98,7 @@ router.get('/data', async (req, res) => {
   }
 });
 
-// ✅ POST /api/wallet/energy-pack - Purchase energy pack
+
 router.post('/energy-pack', async (req, res) => {
   const session = await mongoose.startSession();
   
@@ -107,7 +107,7 @@ router.post('/energy-pack', async (req, res) => {
     
     const { packType, capacity, price, description } = req.body;
     const userId = req.user._id;
-    const institute = req.userInstitute; // Now always a string
+    const institute = req.userInstitute;
     
     console.log('🔍 Creating energy pack:', {
       userId: userId.toString(),
@@ -118,10 +118,10 @@ router.post('/energy-pack', async (req, res) => {
       price
     });
 
-    // 1. Create energy pack record
+
     const energyPack = new EnergyPack({
       userId,
-      institute, // Now a string, not an object
+      institute,
       packType,
       totalCapacity: capacity,
       remainingEnergy: capacity,
@@ -137,7 +137,7 @@ router.post('/energy-pack', async (req, res) => {
     const savedEnergyPack = await energyPack.save({ session });
     console.log('✅ Energy pack created:', savedEnergyPack._id);
 
-    // 2. Create transaction record in carbon_transactions
+
     const blockchainData = generateBlockchainData();
     const transaction = new CarbonTransaction({
       userId,
@@ -185,7 +185,7 @@ router.post('/energy-pack', async (req, res) => {
   }
 });
 
-// ✅ POST /api/wallet/loan-payment - Make loan payment
+
 router.post('/loan-payment', async (req, res) => {
   const session = await mongoose.startSession();
   
@@ -204,7 +204,7 @@ router.post('/loan-payment', async (req, res) => {
       paymentType
     });
 
-    // 1. Find and update loan
+
     const loan = await Loan.findOne({
       _id: loanId,
       userId,
@@ -220,7 +220,7 @@ router.post('/loan-payment', async (req, res) => {
       });
     }
 
-    // Update loan details
+
     const previousBalance = loan.remainingBalance;
     loan.remainingBalance = Math.max(0, loan.remainingBalance - amount);
     
@@ -230,12 +230,12 @@ router.post('/loan-payment', async (req, res) => {
     
     loan.lastPaymentDate = new Date();
     
-    // Calculate remaining payments
+
     if (paymentType === 'regular') {
       loan.remainingPayments = Math.max(0, loan.remainingPayments - 1);
     }
     
-    // Update next payment date
+
     if (loan.remainingBalance > 0) {
       const nextDate = new Date();
       nextDate.setMonth(nextDate.getMonth() + 1);
@@ -247,7 +247,7 @@ router.post('/loan-payment', async (req, res) => {
     const savedLoan = await loan.save({ session });
     console.log('✅ Loan updated:', savedLoan._id);
 
-    // 2. Create transaction record
+
     const blockchainData = generateBlockchainData();
     const transaction = new CarbonTransaction({
       userId,
@@ -295,7 +295,7 @@ router.post('/loan-payment', async (req, res) => {
   }
 });
 
-// ✅ POST /api/wallet/loan-application - Apply for loan
+
 router.post('/loan-application', async (req, res) => {
   const session = await mongoose.startSession();
   
@@ -320,7 +320,7 @@ router.post('/loan-application', async (req, res) => {
       interestRate
     });
 
-    // 1. Create loan record
+
     const monthlyPayment = Math.round((amount * (interestRate/100/12)) / (1 - Math.pow(1 + (interestRate/100/12), -term)));
     const nextPaymentDate = new Date();
     nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
@@ -344,7 +344,7 @@ router.post('/loan-application', async (req, res) => {
     const savedLoan = await loan.save({ session });
     console.log('✅ Loan created:', savedLoan._id);
 
-    // 2. Create transaction record
+
     const blockchainData = generateBlockchainData();
     const transaction = new CarbonTransaction({
       userId,
@@ -393,7 +393,7 @@ router.post('/loan-application', async (req, res) => {
   }
 });
 
-// ✅ POST /api/wallet/energy-charge - Charge energy pack
+
 router.post('/energy-charge', async (req, res) => {
   const session = await mongoose.startSession();
   
@@ -411,7 +411,7 @@ router.post('/energy-charge', async (req, res) => {
       chargeAmount
     });
 
-    // 1. Find and update energy pack
+
     const energyPack = await EnergyPack.findOne({
       _id: energyPackId,
       userId,
@@ -427,7 +427,7 @@ router.post('/energy-charge', async (req, res) => {
       });
     }
 
-    // Update energy pack
+
     const previousEnergy = energyPack.remainingEnergy;
     const maxCharge = energyPack.totalCapacity - energyPack.remainingEnergy;
     const actualCharge = Math.min(chargeAmount, maxCharge);
@@ -439,14 +439,14 @@ router.post('/energy-charge', async (req, res) => {
     const savedEnergyPack = await energyPack.save({ session });
     console.log('✅ Energy pack updated:', savedEnergyPack._id);
 
-    // 2. Create transaction record
+
     const blockchainData = generateBlockchainData();
     const transaction = new CarbonTransaction({
       userId,
       institute,
       instituteId: institute,
       type: 'energy_charge',
-      amount: actualCharge * 2, // Cost in ENTO (2 ENTO per kWh charged)
+      amount: actualCharge * 2,
       description: `Energy pack charging - ${actualCharge} kWh added`,
       building: 'Residential',
       status: 'verified',
@@ -487,7 +487,7 @@ router.post('/energy-charge', async (req, res) => {
   }
 });
 
-// ✅ GET /api/wallet/debug-data - Debug route (temporary)
+
 router.get('/debug-data', async (req, res) => {
   try {
     const userId = req.user._id;
@@ -498,7 +498,7 @@ router.get('/debug-data', async (req, res) => {
     console.log('  Current institute:', institute);
     console.log('  Institute type:', typeof institute);
     
-    // Find all energy packs for this user
+
     const allPacks = await EnergyPack.find({ userId });
     console.log(`  Found ${allPacks.length} energy packs for user`);
     
@@ -510,7 +510,7 @@ router.get('/debug-data', async (req, res) => {
       createdAt: pack.createdAt
     }));
     
-    // Find all loans for this user
+
     const allLoans = await Loan.find({ userId });
     console.log(`  Found ${allLoans.length} loans for user`);
     
@@ -523,7 +523,7 @@ router.get('/debug-data', async (req, res) => {
       createdAt: loan.createdAt
     }));
     
-    // Try different institute queries
+
     const exactPackMatch = await EnergyPack.find({ userId, institute });
     const exactLoanMatch = await Loan.find({ userId, institute });
     

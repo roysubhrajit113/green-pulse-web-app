@@ -1,14 +1,14 @@
-// src/theme/styles.js
+
 import { mode } from "@chakra-ui/theme-tools";
 
 export const globalStyles = {
   colors: {
     brand: {
-      100: "#D1FAE5", // Lightest teal-green
+      100: "#D1FAE5",
       200: "#A7F3D0",
       300: "#6EE7B7",
       400: "#34D399",
-      500: "#10B981", // Main green/teal
+      500: "#10B981",
       600: "#059669",
       700: "#047857",
       800: "#065F46",
@@ -74,7 +74,7 @@ export const globalStyles = {
       600: "#24388a",
       700: "#1B254B",
       800: "#111c44",
-      900: "#000000", // PURE BLACK for sidebar/dark backgrounds
+      900: "#000000",
     },
     gray: {
       100: "#FAFCFE",
@@ -84,7 +84,7 @@ export const globalStyles = {
     global: (props) => ({
       body: {
         overflowX: "hidden",
-        bg: mode("secondaryGray.300", "navy.900")(props), // dark mode = pure black
+        bg: mode("secondaryGray.300", "navy.900")(props),
         fontFamily: "DM Sans",
         letterSpacing: "-0.5px",
       },

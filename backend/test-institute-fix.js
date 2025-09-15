@@ -9,11 +9,11 @@ async function testInstituteFix() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    // Test with users who have object-type institutes
+
     const testUsers = [
-      'anamika123@gmail.com',  // IIT Bombay (object)
-      'mehwish.qureshi2020@gmail.com',  // MNIT Jaipur (object)
-      'rajesh.kumar@iitb.ac.in'  // IIT Bombay (string)
+      'anamika123@gmail.com',
+      'mehwish.qureshi2020@gmail.com',
+      'rajesh.kumar@iitb.ac.in'
     ];
 
     for (const userEmail of testUsers) {
@@ -28,7 +28,7 @@ async function testInstituteFix() {
       console.log(`User institute type: ${typeof user.institute}`);
       console.log(`User institute value: ${typeof user.institute === 'object' ? JSON.stringify(user.institute) : user.institute}`);
       
-      // Apply the fix logic
+
       const instituteDisplayName = getInstituteDisplayName(user.institute);
       const instituteNameForQuery = typeof user.institute === 'object' && user.institute.name 
         ? user.institute.name 
@@ -37,7 +37,7 @@ async function testInstituteFix() {
       console.log(`Display name: ${instituteDisplayName}`);
       console.log(`Query name: ${instituteNameForQuery}`);
       
-      // Test if carbon data exists
+
       const carbonData = await CarbonBiometric.getDashboardData(instituteNameForQuery);
       const departmentData = await CarbonBiometric.getDepartmentData(instituteNameForQuery);
       

@@ -4,7 +4,7 @@ async function testApiLogin() {
   try {
     console.log('Testing login API...');
     
-    // First, let's get the institute data that should be sent
+
     const instituteData = {
       contact: { email: 'info@iitb.ac.in', phone: '+91-22-2572-2545' },
       id: 'inst_006',
@@ -43,7 +43,7 @@ async function testApiLogin() {
       console.log('\n✅ LOGIN SUCCESSFUL!');
       console.log('Token received:', responseData.data.token ? 'YES' : 'NO');
       
-      // Test the dashboard API with the token
+
       if (responseData.data.token) {
         console.log('\n=== Testing dashboard API ===');
         const dashboardResponse = await fetch('http://localhost:5000/api/carbon-data/dashboard', {
@@ -77,7 +77,7 @@ async function testApiLogin() {
   }
 }
 
-// Check if server is running first
+
 async function checkServer() {
   try {
     const response = await fetch('http://localhost:5000/api/health');

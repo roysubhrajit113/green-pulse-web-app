@@ -1,11 +1,11 @@
-// backend/middleware/auth.js
+
 const { verifyToken } = require('../utils/generateToken');
 const User = require('../models/User');
 
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1];
     
     if (!token) {
       return res.status(401).json({

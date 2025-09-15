@@ -11,37 +11,37 @@ const carbonBiometricSchema = new mongoose.Schema({
     default: Date.now,
     required: true
   },
-  // Carbon Metrics
+
   co2Emissions: {
     type: Number,
-    required: true // in tonnes
+    required: true
   },
   co2Savings: {
     type: Number,
-    default: 0 // in tonnes
+    default: 0
   },
   carbonFootprint: {
     type: Number,
-    required: true // in tonnes CO2 equivalent
+    required: true
   },
   carbonOffset: {
     type: Number,
-    default: 0 // in tonnes CO2
+    default: 0
   },
-  // Energy Related Carbon Data
+
   energyConsumption: {
     type: Number,
-    required: true // in kWh
+    required: true
   },
   renewableEnergyUsage: {
     type: Number,
-    default: 0 // in kWh
+    default: 0
   },
   gridEnergyUsage: {
     type: Number,
-    required: true // in kWh
+    required: true
   },
-  // Carbon Budget and Wallet
+
   carbonBudget: {
     allocated: { type: Number, default: 1000 },
     used: { type: Number, default: 0 },
@@ -61,20 +61,20 @@ const carbonBiometricSchema = new mongoose.Schema({
       transactionId: String
     }]
   },
-  // Efficiency Metrics
+
   energyEfficiency: {
     type: Number,
-    default: 85, // percentage
+    default: 85,
     min: 0,
     max: 100
   },
   carbonEfficiency: {
     type: Number,
-    default: 75, // percentage
+    default: 75,
     min: 0,
     max: 100
   },
-  // Location and Context
+
   buildingName: String,
   departmentName: String,
   deviceId: String,
@@ -83,7 +83,7 @@ const carbonBiometricSchema = new mongoose.Schema({
     humidity: Number,
     airQuality: Number
   },
-  // Metadata
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -97,23 +97,23 @@ const carbonBiometricSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for efficient queries
+
 carbonBiometricSchema.index({ institute: 1, timestamp: -1 });
 carbonBiometricSchema.index({ buildingName: 1, departmentName: 1 });
 carbonBiometricSchema.index({ timestamp: -1 });
 carbonBiometricSchema.index({ userId: 1 });
 
-// Static method to get latest data by institute
+
 carbonBiometricSchema.statics.getLatestByInstitute = function(institute) {
   return this.findOne({ institute }).sort({ timestamp: -1 });
 };
 
-// Static method to get aggregated carbon data for dashboard
+
 carbonBiometricSchema.statics.getDashboardData = function(institute) {
   return this.aggregate([
     { $match: { institute } },
     { $sort: { timestamp: -1 } },
-    { $limit: 100 }, // Get recent data for calculations
+    { $limit: 100 },
     {
       $group: {
         _id: null,
@@ -149,7 +149,7 @@ carbonBiometricSchema.statics.getDashboardData = function(institute) {
   ]);
 };
 
-// Static method to get monthly trends
+
 carbonBiometricSchema.statics.getMonthlyTrends = function(institute, months = 6) {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);
@@ -207,7 +207,7 @@ carbonBiometricSchema.statics.getMonthlyTrends = function(institute, months = 6)
   ]);
 };
 
-// Static method to get department-wise carbon data
+
 carbonBiometricSchema.statics.getDepartmentData = function(institute) {
   return this.aggregate([
     { $match: { institute, departmentName: { $exists: true, $ne: null } } },
@@ -250,7 +250,7 @@ carbonBiometricSchema.statics.getDepartmentData = function(institute) {
   ]);
 };
 
-// Static method to get building-wise carbon data
+
 carbonBiometricSchema.statics.getBuildingData = function(institute) {
   return this.aggregate([
     { $match: { institute, buildingName: { $exists: true, $ne: null } } },

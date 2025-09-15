@@ -83,7 +83,7 @@ import {
 import tableDataCheck from "views/admin/default/variables/tableDataCheck.json";
 import tableDataComplex from "views/admin/default/variables/tableDataComplex.json";
 
-// Enhanced Department Carbon Data Component with Real Database Integration
+
 const DepartmentCarbonData = () => {
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
@@ -91,15 +91,15 @@ const DepartmentCarbonData = () => {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const itemBg = useColorModeValue("gray.50", "gray.700");
   
-  // Use real department data from database
+
   const { getEnergyConsumptionByDepartment, loading: deptLoading } = useDepartment();
   const departmentData = getEnergyConsumptionByDepartment();
 
-  // Fallback to carbon context data if department data is not available
+
   const { dashboardData } = useCarbon();
   const fallbackData = dashboardData?.departmentData || [];
 
-  // Use department context data first, fallback to carbon context
+
   const displayData = departmentData && departmentData.length > 0 ? departmentData : fallbackData;
 
   if (deptLoading) {
@@ -172,7 +172,7 @@ const DepartmentCarbonData = () => {
                     {(dept.efficiency && dept.efficiency >= 90) ? "Excellent" : 
                      (dept.efficiency && dept.efficiency >= 70) ? "Good" : "Needs Improvement"}
                   </Badge>
-                  {/* Show building info if available from department context */}
+                  {}
                   {dept.square_feet && (
                     <Text color={textColorSecondary} fontSize="xs">
                       {dept.square_feet.toLocaleString()} sq ft
@@ -189,27 +189,27 @@ const DepartmentCarbonData = () => {
 };
 
 export default function CarbonDeptDashboard() {
-  // Chakra Color Mode
+
   const brandColor = useColorModeValue("green.400", "white");
   const boxBg = useColorModeValue("green.50", "whiteAlpha.100");
   
-  // Color mode values for institute header
+
   const headerCardBg = useColorModeValue("white", "navy.800");
   const headerTextColor = useColorModeValue("navy.700", "white");
   const headerSubTextColor = useColorModeValue("gray.600", "gray.400");
   
-  // Context data
+
   const { dashboardData, loading, error } = useCarbon();
   const { user } = useAuth();
   const { currentInstitute } = useInstitute();
   const { departments, loading: deptLoading } = useDepartment();
   
-  // Use real data or fallback to defaults
+
   const co2Savings = dashboardData?.co2Savings ?? 350.4;
   const carbonBudgetUsed = dashboardData?.carbonBudgetUsed ?? 642.39;
   const walletBalance = dashboardData?.walletBalance ?? 1000;
 
-  // Show loading state if data is not available
+
   if (loading && !dashboardData) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }} textAlign="center">
@@ -218,7 +218,7 @@ export default function CarbonDeptDashboard() {
     );
   }
 
-  // Show error state if no data is available (comprehensive error handling from first code)
+
   if (!loading && !dashboardData && error) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }} textAlign="center" px="20px">
@@ -247,7 +247,7 @@ export default function CarbonDeptDashboard() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }} px={{ base: "20px", md: "30px" }}>
-      {/* Institute Name Header (from first code) */}
+      {}
       <Box mb="20px">
         <Card p="20px" bg={headerCardBg}>
           <Flex align="center" justify="space-between">
@@ -278,7 +278,7 @@ export default function CarbonDeptDashboard() {
         </Card>
       </Box>
       
-      {/* Enhanced Meter Alert System (from second code) */}
+      {}
       <Box mb="20px">
         {user && <MeterAlertSystem userId={user._id || user.id} />}
       </Box>

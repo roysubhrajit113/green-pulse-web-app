@@ -10,25 +10,25 @@ const {
   getAlertSummary
 } = require('../controllers/alertController');
 
-// Apply authentication middleware to all routes
+
 router.use(authenticateToken);
 
-// Get alert summary/statistics
+
 router.get('/summary', getAlertSummary);
 
-// Get user alerts with pagination and filtering
+
 router.get('/', getUserAlerts);
 
-// Generate alerts for current user (manual trigger)
+
 router.post('/generate', generateAlertsForUser);
 
-// Acknowledge an alert
+
 router.patch('/:id/acknowledge', acknowledgeAlert);
 
-// Resolve an alert
+
 router.patch('/:id/resolve', resolveAlert);
 
-// Trigger manual alert check for current user
+
 router.post('/check', async (req, res) => {
   try {
     const userId = req.user._id;
@@ -54,7 +54,7 @@ router.post('/check', async (req, res) => {
   }
 });
 
-// Get alert service status (admin only - can be extended with role-based auth)
+
 router.get('/service/status', (req, res) => {
   try {
     const status = alertService.getStatus();
@@ -71,13 +71,13 @@ router.get('/service/status', (req, res) => {
   }
 });
 
-// Add this temporary debugging endpoint
+
 router.get('/debug/:id', async (req, res) => {
   try {
     const alertId = req.params.id;
     const userId = req.user._id;
     
-    // Check the alert in database
+
     const alert = await Alert.findById(alertId);
     console.log('=== ALERT DEBUG ===');
     console.log('Alert found:', !!alert);

@@ -1,14 +1,14 @@
 import axios from 'axios';
 
-// Chatbot API client - separate from main API since it runs on different port
-const CHATBOT_BASE_URL = 'http://localhost:5001'; // Changed to port 5001
+
+const CHATBOT_BASE_URL = 'http://localhost:5001';
 
 const chatbotClient = axios.create({
   baseURL: CHATBOT_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 second timeout for AI responses
+  timeout: 30000,
 });
 
 const chatbotService = {
@@ -25,7 +25,7 @@ const chatbotService = {
     } catch (error) {
       console.error('Chatbot service error:', error);
       
-      // Handle different types of errors
+
       if (error.code === 'ECONNREFUSED') {
         return {
           success: false,
@@ -50,7 +50,7 @@ const chatbotService = {
     }
   },
 
-  // Check if chatbot service is available
+
   checkHealth: async () => {
     try {
       const response = await chatbotClient.get('/health');

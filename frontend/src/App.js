@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import './assets/css/App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import AuthLayout from './layouts/auth';
@@ -12,7 +11,7 @@ import { DepartmentProvider } from './contexts/DepartmentContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/loading_screen/LoadingScreen';
-import Chatbot from './components/chatbot/Chatbot'; // Added from first code
+import Chatbot from './components/chatbot/Chatbot';
 
 export default function Main() {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
@@ -21,7 +20,6 @@ export default function Main() {
   const [loadingMessage, setLoadingMessage] = useState("Initializing Green Pulse Dashboard...");
   
   useEffect(() => {
-    // Enhanced loading process with comprehensive progress updates
     const loadingSteps = [
       { progress: 15, message: "Loading blockchain services..." },
       { progress: 30, message: "Connecting to energy oracle..." },
@@ -40,19 +38,19 @@ export default function Main() {
         currentStep++;
       } else {
         clearInterval(interval);
-        // Add a small delay before hiding loading screen (from second code)
+
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
       }
-    }, 700); // Slightly faster progression
+    }, 700);
 
     return () => clearInterval(interval);
   }, []);
   
   return (
     <ErrorBoundary>
-      <ChakraProvider theme={currentTheme || initialTheme}> {/* Added fallback from second code */}
+      <ChakraProvider theme={currentTheme || initialTheme}>
         <AuthProvider>
           <InstituteProvider>
             <DepartmentProvider>
@@ -74,7 +72,6 @@ export default function Main() {
                   />
                   <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
                 </Routes>
-                {/* Add Chatbot component to appear on all pages (from first code) */}
                 <Chatbot />
               </CarbonProvider>
             </DepartmentProvider>

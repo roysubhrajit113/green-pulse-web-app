@@ -2,7 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
 
-// Institute Schema (if you want to use Mongoose models)
+
 const instituteSchema = new mongoose.Schema({
   id: { type: String, required: true, unique: true },
   name: { type: String, required: true },
@@ -22,12 +22,12 @@ const instituteSchema = new mongoose.Schema({
 
 const Institute = mongoose.model('Institute', instituteSchema, 'institutes');
 
-// GET /api/institutes - Get all institutes
+
 router.get('/', async (req, res) => {
   try {
     console.log('GET /api/institutes - Request received');
     
-    // Check if collection exists and has documents
+
     const collections = await mongoose.connection.db.listCollections({ name: 'institutes' }).toArray();
     if (collections.length === 0) {
       console.log('Collection "institutes" does not exist');
@@ -37,11 +37,11 @@ router.get('/', async (req, res) => {
       });
     }
     
-    // Count documents in collection
+
     const count = await Institute.countDocuments({});
     console.log(`Found ${count} institutes in database`);
     
-    // Fetch institutes
+
     const institutes = await Institute.find({}).select('-_id -__v');
     console.log('Institutes fetched successfully');
     
@@ -56,7 +56,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/institutes/:id - Get single institute by ID
+
 router.get('/:id', async (req, res) => {
   try {
     const institute = await Institute.findOne({ id: req.params.id }).select('-_id -__v');
@@ -79,7 +79,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/institutes - Create new institute
+
 router.post('/', async (req, res) => {
   try {
     const newInstituteData = {
@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
     const newInstitute = new Institute(newInstituteData);
     await newInstitute.save();
     
-    // Return without MongoDB-specific fields
+
     const responseData = newInstitute.toObject();
     delete responseData._id;
     delete responseData.__v;
@@ -119,7 +119,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/institutes/:id - Update institute
+
 router.put('/:id', async (req, res) => {
   try {
     const updatedInstitute = await Institute.findOneAndUpdate(
@@ -150,7 +150,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/institutes/:id - Delete institute
+
 router.delete('/:id', async (req, res) => {
   try {
     const deletedInstitute = await Institute.findOneAndDelete({ id: req.params.id });
@@ -176,7 +176,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// GET /api/institutes/campus/:campusId - Get institute by campus ID
+
 router.get('/campus/:campusId', async (req, res) => {
   try {
     const institute = await Institute.findOne({ campusId: req.params.campusId }).select('-_id -__v');

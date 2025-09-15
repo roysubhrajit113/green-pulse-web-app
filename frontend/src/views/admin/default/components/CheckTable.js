@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 
 import {
   Flex,
@@ -23,7 +23,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
-// Custom components
+
 import Card from 'components/card/CarbonCard';
 import Menu from 'components/menu/MainMenu';
 

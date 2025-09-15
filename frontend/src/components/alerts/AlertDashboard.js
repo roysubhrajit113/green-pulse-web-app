@@ -22,7 +22,7 @@ import {
 } from '@chakra-ui/react';
 import { MdSettings, MdNotifications, MdBarChart } from 'react-icons/md';
 import MeterAlertSystem from './MeterAlertSystem';
-import AlertSystem from './AlertSystem'; // Your existing alert system
+import AlertSystem from './AlertSystem';
 import AlertConfiguration from './AlertConfiguration';
 
 const AlertDashboard = ({ userId }) => {
@@ -88,7 +88,7 @@ const AlertDashboard = ({ userId }) => {
         </TabPanels>
       </Tabs>
 
-      {/* Configuration Modal */}
+      {}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent>

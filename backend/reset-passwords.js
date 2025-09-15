@@ -25,7 +25,7 @@ async function resetPasswords() {
         continue;
       }
 
-      // Hash the new password
+
       const hashedPassword = await bcrypt.hash('password123', 12);
       user.password = hashedPassword;
       await user.save();

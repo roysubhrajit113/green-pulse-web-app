@@ -44,18 +44,18 @@ const MeterAlertSystem = ({ userId }) => {
   const [alertSummary, setAlertSummary] = useState({});
   const toast = useToast();
   
-  // Dark mode color values - moved to top level
+
   const timestampTextColor = useColorModeValue("gray.600", "gray.300");
   const alertSummaryBgColor = useColorModeValue("gray.50", "gray.700");
   
-  // Dark mode colors for "No Active Alerts" section
+
   const noAlertsBgColor = useColorModeValue("green.50", "green.900");
   const noAlertsBorderColor = useColorModeValue("green.200", "green.700");
   const noAlertsIconColor = useColorModeValue("green.500", "green.200");
   const noAlertsTitleColor = useColorModeValue("green.800", "white");
   const noAlertsDescColor = useColorModeValue("green.700", "green.100");
 
-  // Alert severity configurations
+
   const severityConfig = {
     critical: { 
       color: 'red', 
@@ -87,7 +87,7 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Fetch user alerts
+
   const fetchAlerts = async (showToast = false) => {
     try {
       const response = await apiClient.get('/alerts', {
@@ -122,7 +122,7 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Fetch alert summary
+
   const fetchAlertSummary = async () => {
     try {
       const response = await apiClient.get('/alerts/summary');
@@ -134,7 +134,7 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Manual refresh/check for new alerts
+
   const checkForNewAlerts = async () => {
     setIsRefreshing(true);
     try {
@@ -175,12 +175,12 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Acknowledge alert - FIXED VERSION
+
   const acknowledgeAlert = async (alertId) => {
     try {
       const response = await apiClient.patch(`/alerts/${alertId}/acknowledge`, {});
       if (response.data.success) {
-        // Instead of optimistic update, refetch the data to ensure consistency
+
         await fetchAlerts();
         await fetchAlertSummary();
         toast({
@@ -203,12 +203,12 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Resolve alert - FIXED VERSION
+
   const resolveAlert = async (alertId) => {
     try {
       const response = await apiClient.patch(`/alerts/${alertId}/resolve`, {});
       if (response.data.success) {
-        // Instead of optimistic update, refetch the data to ensure consistency
+
         await fetchAlerts();
         await fetchAlertSummary();
         toast({
@@ -231,12 +231,12 @@ const MeterAlertSystem = ({ userId }) => {
     }
   };
 
-  // Format timestamp
+
   const formatTimestamp = (timestamp) => {
     return new Date(timestamp).toLocaleString();
   };
 
-  // Initial load
+
   useEffect(() => {
     fetchAlerts();
     fetchAlertSummary();
@@ -299,15 +299,15 @@ const MeterAlertSystem = ({ userId }) => {
       {visibleAlerts.length === 0 ? (
         <Alert 
           borderRadius="md" 
-          bg={noAlertsBgColor}                    // ✅ Dark mode: green.900
-          borderColor={noAlertsBorderColor}       // ✅ Dark mode: green.700
+          bg={noAlertsBgColor}
+          borderColor={noAlertsBorderColor}
           borderWidth="1px"
-          color={noAlertsTitleColor}              // ✅ Dark mode: white
+          color={noAlertsTitleColor}
         >
-          <AlertIcon color={noAlertsIconColor} />  {/* ✅ Dark mode: green.200 */}
+          <AlertIcon color={noAlertsIconColor} />  {}
           <Box>
-            <AlertTitle color={noAlertsTitleColor}>No Active Meter Alerts</AlertTitle>  {/* ✅ Dark mode: white */}
-            <AlertDescription color={noAlertsDescColor}>  {/* ✅ Dark mode: green.100 */}
+            <AlertTitle color={noAlertsTitleColor}>No Active Meter Alerts</AlertTitle>  {}
+            <AlertDescription color={noAlertsDescColor}>  {}
               All energy meters are operating within normal parameters.
             </AlertDescription>
           </Box>
@@ -376,7 +376,7 @@ const MeterAlertSystem = ({ userId }) => {
         </SimpleGrid>
       )}
 
-      {/* Alert Summary */}
+      {}
       {Object.keys(alertSummary).length > 0 && (
         <Box mt={4} p={3} bg={alertSummaryBgColor} borderRadius="md" fontSize="sm">
           <Text fontWeight="bold" mb={2}>Alert Summary:</Text>

@@ -5,14 +5,14 @@ require('dotenv').config();
 
 const checkAlertsCollection = async () => {
   try {
-    // Connect to MongoDB
+
     await mongoose.connect(process.env.MONGODB_URI, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     console.log('✅ Connected to MongoDB');
 
-    // Check if alerts collection exists
+
     const collections = await mongoose.connection.db.listCollections().toArray();
     const alertsCollection = collections.find(col => col.name === 'alerts');
     
@@ -22,11 +22,11 @@ const checkAlertsCollection = async () => {
       console.log('❌ Alerts collection does not exist yet');
     }
 
-    // Get total count of alerts
+
     const totalAlerts = await Alert.countDocuments();
     console.log(`📊 Total alerts in database: ${totalAlerts}`);
 
-    // Get alerts by status
+
     const statusCounts = await Alert.aggregate([
       {
         $group: {
@@ -41,7 +41,7 @@ const checkAlertsCollection = async () => {
       console.log(`  ${status._id}: ${status.count}`);
     });
 
-    // Get recent alerts (last 10)
+
     const recentAlerts = await Alert.find()
       .sort({ timestamp: -1 })
       .limit(10)
@@ -64,7 +64,7 @@ const checkAlertsCollection = async () => {
       console.log('   ---');
     });
 
-    // Get alerts by user
+
     const alertsByUser = await Alert.aggregate([
       {
         $group: {
@@ -93,7 +93,7 @@ const checkAlertsCollection = async () => {
       console.log(`  ${userAlert.user.fullName} (${userAlert.user.email}): ${userAlert.count} alerts`);
     });
 
-    // Show sample alert document structure
+
     const sampleAlert = await Alert.findOne().lean();
     if (sampleAlert) {
       console.log('\n📋 Sample Alert Document Structure:');
@@ -108,5 +108,5 @@ const checkAlertsCollection = async () => {
   }
 };
 
-// Run the script
+
 checkAlertsCollection();

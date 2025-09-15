@@ -1,4 +1,4 @@
-// Chakra imports
+
 import {
   Box,
   Button,
@@ -7,13 +7,13 @@ import {
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
-// Custom components
+
 import Card from "components/card/CarbonCard.js";
 import LineChart from "components/charts/LineChart";
 import React, { useState, useEffect } from "react";
 import { IoCheckmarkCircle } from "react-icons/io5";
 import { MdBarChart, MdOutlineCalendarToday } from "react-icons/md";
-// Assets
+
 import { RiArrowUpSFill } from "react-icons/ri";
 import {
   lineChartOptionsTotalSpent,
@@ -23,7 +23,7 @@ import { useCarbon } from "contexts/CarbonContext";
 export default function TotalSpent(props) {
   const { ...rest } = props;
 
-  // Chakra Color Mode
+
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "white");
   const boxBg = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
@@ -38,7 +38,7 @@ export default function TotalSpent(props) {
     { bg: "whiteAlpha.100" }
   );
 
-  // Carbon data context
+
   const { getEnergyConsumptionData } = useCarbon();
   const [energyData, setEnergyData] = useState({
     current: 2847,
@@ -52,7 +52,7 @@ export default function TotalSpent(props) {
     }
   });
   
-  // Load energy data on component mount
+
   useEffect(() => {
     const loadEnergyData = async () => {
       try {
@@ -60,14 +60,14 @@ export default function TotalSpent(props) {
         setEnergyData(data);
       } catch (error) {
         console.error('Error loading energy data:', error);
-        // Keep default/fallback data if loading fails
+
       }
     };
     
     loadEnergyData();
   }, [getEnergyConsumptionData]);
   
-  // Calculate efficiency trend
+
   const currentEfficiency = energyData.efficiency && energyData.efficiency.length > 0 
     ? energyData.efficiency[energyData.efficiency.length - 1] 
     : 92;

@@ -18,7 +18,7 @@ const register = async (req, res) => {
       fullName: fullName.trim(),
       email: email.toLowerCase().trim(),
       password,
-      position: 'Student' // Default position
+      position: 'Student'
     });
     
     await user.save();

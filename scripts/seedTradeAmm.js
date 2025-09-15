@@ -1,17 +1,17 @@
-// scripts/seedTradeAmm.js
-// Seeds the EnergyTrade AMM with initial EnTo and kWh reserves.
-// - Reads contract addresses from deploy/deployments/<network>.json
-// - Ensures Treasury approves EnergyTrade to pull EnTo
-// - Calls trade.seedAmm(enToAmount, kWhAmount)
-// - Prints final reserve snapshot hints (via events/logs)
-//
-// Usage:
-//   npx hardhat run --network localhost scripts/seedTradeAmm.js
-//
-// Prereqs:
-// - Contracts deployed via scripts/deploy.js
-// - Treasury signer available from Hardhat accounts (index 2 by default in our examples)
-// - Treasury holds enough EnTo to seed the pool
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const fs = require("fs");
 const path = require("path");
@@ -31,8 +31,8 @@ async function main() {
   const R = addrs.roles || {};
 
   const signers = await ethers.getSigners();
-  // By convention in our examples:
-  // [0]=deployer, [1]=admin, [2]=treasury
+
+
   const deployer = signers[0];
   const admin = signers[1] || deployer;
   const treasury = signers[2] || deployer;
@@ -48,18 +48,18 @@ async function main() {
   const token = await ethers.getContractAt("EnergyToken", A.EnergyToken);
   const trade = await ethers.getContractAt("EnergyTrade", A.EnergyTrade);
 
-  // Configuration for seeding
-  // Adjust these numbers to your demo’s desired initial liquidity.
-  const enToAmount = ethers.parseUnits("5000", 18); // 5,000 EnTo
-  const kWhAmount = 50_000n;                        // 50,000 kWh (virtual units)
 
-  // Check treasury balance
+
+  const enToAmount = ethers.parseUnits("5000", 18);
+  const kWhAmount = 50_000n;
+
+
   const treasBal = await token.balanceOf(treasury.address);
   if (treasBal < enToAmount) {
     throw new Error(`Treasury lacks EnTo. Need ${ethers.formatUnits(enToAmount, 18)}, have ${ethers.formatUnits(treasBal, 18)}.`);
   }
 
-  // Approve EnergyTrade to pull EnTo from Treasury
+
   const tradeAddr = await trade.getAddress();
   const allowance = await token.allowance(treasury.address, tradeAddr);
   if (allowance < enToAmount) {
@@ -68,13 +68,13 @@ async function main() {
     await txA.wait();
   }
 
-  // Seed AMM reserves
+
   console.log(`Seeding AMM with ${ethers.formatUnits(enToAmount, 18)} EnTo and ${kWhAmount.toString()} kWh...`);
   const txSeed = await trade.connect(admin).seedAmm(enToAmount, kWhAmount);
   const rcptSeed = await txSeed.wait();
   console.log("AMM seeded. Gas used:", rcptSeed.gasUsed?.toString());
 
-  // Optional: print latest reference price and a simple quote to confirm pool is live
+
   try {
     const refPrice18 = await trade.previewRefPrice18();
     console.log("Ref price (kWh per EnTo, 1e18):", refPrice18.toString());

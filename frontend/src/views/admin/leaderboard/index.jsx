@@ -63,7 +63,7 @@ import {
 import { useDepartment } from "../../../contexts/DepartmentContext";
 import { useInstitute } from "../../../contexts/InstituteContext";
 
-// Animation keyframes
+
 const growAnimation = keyframes`
   0% { transform: scale(0.8) rotate(-5deg); opacity: 0; }
   50% { transform: scale(1.1) rotate(2deg); opacity: 0.8; }
@@ -82,12 +82,12 @@ const sparkleAnimation = keyframes`
   100% { opacity: 0; transform: scale(0); }
 `;
 
-// Updated Growth Tree Component with Efficiency Display
-// FIXED: Growth Tree Component with Proper Colors and Icon Visibility
+
+
 const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
-  // ✅ Dynamic colors that work properly
-  const treeColorStart = useColorModeValue("#48BB78", "#68D391"); // green.400 / green.300
-  const treeColorEnd = useColorModeValue("#38A169", "#48BB78");   // green.500 / green.400
+
+  const treeColorStart = useColorModeValue("#48BB78", "#68D391");
+  const treeColorEnd = useColorModeValue("#38A169", "#48BB78");
   const trunkColor = useColorModeValue("brown.600", "brown.500");
   const sparkleColor = useColorModeValue("yellow.300", "yellow.200");
   const iconColor = useColorModeValue("white", "gray.100");
@@ -98,7 +98,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
         position="relative"
         animation={isAnimating ? `${growAnimation} 2s ease-in-out` : "none"}
       >
-        {/* FIXED: Proper gradient and positioning */}
+        {}
         <Circle
           size="120px"
           bgGradient={`linear(135deg, ${treeColorStart}, ${treeColorEnd})`}
@@ -109,7 +109,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
           justifyContent="center"
           overflow="visible"
         >
-          {/* Tree Icon - Now properly visible */}
+          {}
           <Icon 
             as={MdNature} 
             w="60px" 
@@ -119,7 +119,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
             position="relative"
           />
           
-          {/* FIXED: Efficiency text positioned to NOT overlap icon */}
+          {}
           <Badge
             position="absolute"
             bottom="-10px"
@@ -140,7 +140,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
           </Badge>
         </Circle>
         
-        {/* Sparkles with proper color values */}
+        {}
         {isAnimating && (
           <>
             <Circle
@@ -171,7 +171,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
         )}
       </Box>
       
-      {/* Tree Trunk with proper color */}
+      {}
       <Box
         w="20px"
         h="40px"
@@ -180,7 +180,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
         animation={isAnimating ? `${growAnimation} 2s ease-in-out 0.5s both` : "none"}
       />
       
-      {/*  Level Badge */}
+      {}
       <Badge
         colorScheme="green"
         variant="solid"
@@ -194,7 +194,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
         Level {level}
       </Badge>
 
-      {/* REMOVED: Redundant efficiency text that was below */}
+      {}
       <Text fontSize="xs" color="gray.500" textAlign="center">
         Institute Efficiency Tree
       </Text>
@@ -203,7 +203,7 @@ const GrowthTree = ({ level, isAnimating, overallEfficiency }) => {
 };
 
 
-// Enhanced Department Card Component
+
 const DepartmentCard = ({ department, rank, isCurrentUser, isAnimating }) => {
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -237,7 +237,7 @@ const DepartmentCard = ({ department, rank, isCurrentUser, isAnimating }) => {
     }
   };
 
-  // ✅ Calculate energy saved and CO2 for individual cards
+
   const energyCapacity = Number(department.energyCapacity) || 0;
   const currentConsumption = Number(department.currentConsumption) || 0;
   const energySaved = Math.max(0, energyCapacity - currentConsumption);
@@ -361,15 +361,15 @@ const DepartmentCard = ({ department, rank, isCurrentUser, isAnimating }) => {
   );
 };
 
-// ✅ Updated Savings Potential Modal with Efficiency Focus
+
 const SavingsPotentialModal = ({ isOpen, onClose, inefficiencyGap, overallEfficiency, institute }) => {
   const textColor = useColorModeValue("navy.700", "white");
   const cardBg = useColorModeValue("white", "navy.800");
   
-  // ✅ Calculate potential based on efficiency improvement
+
   const potentialEfficiencyGain = Number(inefficiencyGap) || 0;
   const currentEfficiency = Number(overallEfficiency) || 0;
-  const targetEfficiency = Math.min(100, currentEfficiency + (potentialEfficiencyGain * 0.1)); // 10% of gap
+  const targetEfficiency = Math.min(100, currentEfficiency + (potentialEfficiencyGain * 0.1));
   
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl" isCentered>
@@ -390,7 +390,7 @@ const SavingsPotentialModal = ({ isOpen, onClose, inefficiencyGap, overallEffici
         
         <ModalBody>
           <VStack spacing="6">
-            {/* ✅ Current vs Target Efficiency */}
+            {}
             <SimpleGrid columns={2} gap="4" w="100%">
               <Card bg="orange.50" p="4" borderRadius="15px" textAlign="center">
                 <VStack spacing="2">
@@ -413,7 +413,7 @@ const SavingsPotentialModal = ({ isOpen, onClose, inefficiencyGap, overallEffici
               </Card>
             </SimpleGrid>
 
-            {/* ✅ Improvement Potential */}
+            {}
             <SimpleGrid columns={1} gap="4" w="100%">
               <Card bg="blue.50" p="4" borderRadius="15px">
                 <HStack spacing="4">
@@ -432,7 +432,7 @@ const SavingsPotentialModal = ({ isOpen, onClose, inefficiencyGap, overallEffici
                 </HStack>
               </Card>
 
-              {/* ✅ Environmental Impact */}
+              {}
               <Card bg="green.50" p="4" borderRadius="15px">
                 <HStack spacing="4">
                   <Icon as={MdEco} w="40px" h="40px" color="green.500" />
@@ -451,7 +451,7 @@ const SavingsPotentialModal = ({ isOpen, onClose, inefficiencyGap, overallEffici
               </Card>
             </SimpleGrid>
 
-            {/* ✅ Action Steps */}
+            {}
             <Card bg="purple.50" p="4" borderRadius="15px" w="100%">
               <VStack spacing="3">
                 <HStack spacing="2">
@@ -508,7 +508,7 @@ export default function Leaderboard() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
   
-  // ✅ UPDATED: Focus on efficiency rather than absolute savings
+
   const calculateTotals = () => {
     if (!departments || departments.length === 0) {
       return {
@@ -524,11 +524,11 @@ export default function Leaderboard() {
     
     departments.forEach(dept => {
       totalEfficiencyPoints += (Number(dept.efficiency) || 0);
-      totalPossiblePoints += 100; // Max efficiency is 100%
+      totalPossiblePoints += 100;
     });
     
     const overallEfficiency = totalPossiblePoints > 0 ? totalEfficiencyPoints / totalPossiblePoints * 100 : 0;
-    const inefficiencyGap = 100 - overallEfficiency; // How much room for improvement
+    const inefficiencyGap = 100 - overallEfficiency;
     
     console.log('🔍 EFFICIENCY DEBUG:');
     console.log('  Total Efficiency Points:', totalEfficiencyPoints);
@@ -539,22 +539,22 @@ export default function Leaderboard() {
     return {
       overallEfficiency: overallEfficiency.toFixed(1),
       improvementPotential: inefficiencyGap.toFixed(1),
-      totalEnergySaved: `${overallEfficiency.toFixed(1)}% Efficient`, // Show efficiency instead
+      totalEnergySaved: `${overallEfficiency.toFixed(1)}% Efficient`,
       totalCO2Impact: `${inefficiencyGap.toFixed(1)}% Potential Reduction`
     };
   };
 
   const totals = calculateTotals();
-  const stats = getDepartmentStats(); // Keep this for other stats like student counts
+  const stats = getDepartmentStats();
   
-  // ✅ UPDATED: Sort departments by EFFICIENCY and limit to TOP 6 ONLY
+
   const sortedDepartments = departments
     .sort((a, b) => (Number(b.efficiency) || 0) - (Number(a.efficiency) || 0))
     .slice(0, 6);
 
   const topThreeDepartments = sortedDepartments.slice(0, 3);
 
-  // ✅ UPDATED: Calculate tree level based on efficiency
+
   const calculateTreeLevel = (efficiency) => {
     return Math.min(10, Math.max(1, Math.floor(efficiency / 10) + 1));
   };
@@ -591,7 +591,7 @@ export default function Leaderboard() {
     }
   };
 
-  // ✅ UPDATED: Level Up with Efficiency Focus
+
   const handleLevelUp = () => {
     setIsAnimating(true);
     
@@ -635,7 +635,7 @@ export default function Leaderboard() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      {/* ✅ Updated Efficiency Modal */}
+      {}
       <SavingsPotentialModal 
         isOpen={isOpen}
         onClose={onClose}
@@ -644,7 +644,7 @@ export default function Leaderboard() {
         institute={currentInstitute?.name}
       />
 
-      {/* Header Section */}
+      {}
       <Flex justify="space-between" align="center" mb="30px">
         <Box>
           <Heading color={textColor} fontSize="4xl" fontWeight="bold" mb="2">
@@ -677,7 +677,7 @@ export default function Leaderboard() {
         </HStack>
       </Flex>
 
-      {/* ✅ UPDATED: Stats Overview with Efficiency Metrics */}
+      {}
       <SimpleGrid columns={{ base: 2, md: 4 }} gap="20px" mb="30px">
         <Card bg={cardBg} borderColor={borderColor} p="20px">
           <Stat textAlign="center">
@@ -732,7 +732,7 @@ export default function Leaderboard() {
         </Card>
       </SimpleGrid>
 
-      {/* Main Leaderboard with Growth Tree */}
+      {}
       <Card bg={cardBg} borderColor={borderColor} p="30px" mb="30px">
         <CardHeader textAlign="center" mb="30px">
           <Heading size="lg" color={textColor} mb="2">
@@ -759,7 +759,7 @@ export default function Leaderboard() {
             ))}
           </VStack>
           
-          {/* ✅ Center - Updated Growth Tree */}
+          {}
           <Center>
             <VStack spacing="6" align="center">
               <GrowthTree 
@@ -768,7 +768,7 @@ export default function Leaderboard() {
                 overallEfficiency={totals.overallEfficiency}
               />
               
-              {/* ✅ Updated Tree Stats */}
+              {}
               <Card bg="green.50" p="20px" borderRadius="20px" w="200px">
                 <VStack spacing="3">
                   <Text color="green.600" fontSize="sm" fontWeight="bold">
@@ -829,7 +829,7 @@ export default function Leaderboard() {
         </SimpleGrid>
       </Card>
 
-      {/* ✅ Updated Achievement Section */}
+      {}
       <Card bg={cardBg} borderColor={borderColor} p="30px">
         <CardHeader textAlign="center">
           <Heading size="lg" color={textColor} mb="2">

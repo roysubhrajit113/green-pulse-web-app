@@ -1,5 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap");
-/* LIGHT MODE + GENERAL */
+
 
 .react-calendar {
   border: unset;
@@ -101,7 +101,7 @@ abbr[title] {
   color: white;
 }
 
-/* DARK MODE */
+
 
 body.chakra-ui-dark .react-calendar {
   border-radius: 30px;

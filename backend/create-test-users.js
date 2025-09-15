@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const bcrypt = require('bcryptjs');
 
-// Sample test users for different institutes
+
 const testUsers = [
   {
     institute: 'Indian Institute of Technology Bombay',
@@ -55,7 +55,7 @@ async function createTestUsers() {
     console.log('Creating test users for different institutes...\n');
 
     for (const userData of testUsers) {
-      // Check if user already exists
+
       const existingUser = await User.findOne({ email: userData.email });
       
       if (existingUser) {
@@ -63,7 +63,7 @@ async function createTestUsers() {
         continue;
       }
 
-      // Create new user
+
       const user = new User(userData);
       await user.save();
       
@@ -77,7 +77,7 @@ async function createTestUsers() {
 
     console.log('📊 Testing institute data isolation...\n');
 
-    // Test with each user's institute
+
     const CarbonBiometric = require('./models/CarbonBiometric');
     
     for (const userData of testUsers) {

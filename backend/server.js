@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -15,31 +14,24 @@ const walletRoutes = require('./routes/wallet');
 
 
 
-// Load env vars
 dotenv.config();
 
-// Connect to database
 connectDB();
 
 const app = express();
 
-// Security middleware
 app.use(helmet());
 
-// Enhanced CORS configuration (from second code)
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'], // Allow multiple frontend URLs
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
   credentials: true,
   optionsSuccessStatus: 200
 }));
 
 console.log('CORS configured to allow origins:', ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002']);
 
-// Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Routes - Combined from both files
 app.use('/api/auth', authRoutes);
 app.use('/api/institutes', instituteRoutes);
 app.use('/api/alerts', alertRoutes);
@@ -48,7 +40,6 @@ app.use('/api/buildings', buildingRoutes);
 app.use('/api/meter-data', meterDataRoutes);
 app.use('/api/wallet', walletRoutes);
 
-// Health check route
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -56,8 +47,6 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString()
   });
 });
-
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -71,6 +60,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
   
-  // Start the alert monitoring service (from first code)
   alertService.start();
 });

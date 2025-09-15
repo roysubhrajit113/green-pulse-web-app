@@ -1,6 +1,4 @@
-/**
- * Tests for user utility functions
- */
+
 
 import { generateInitials, getDisplayName } from '../userUtils';
 

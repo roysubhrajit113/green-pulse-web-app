@@ -21,15 +21,15 @@ const energyConsumptionSchema = new mongoose.Schema({
   },
   consumption: {
     type: Number,
-    required: true // in kWh
+    required: true
   },
   efficiency: {
     type: Number,
-    default: 85 // percentage
+    default: 85
   },
   carbonFootprint: {
     type: Number,
-    required: true // CO2 equivalent
+    required: true
   },
   energySource: {
     type: String,
@@ -38,9 +38,9 @@ const energyConsumptionSchema = new mongoose.Schema({
   },
   cost: {
     type: Number,
-    default: 0 // in currency units
+    default: 0
   },
-  // Metadata
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
@@ -55,12 +55,12 @@ const energyConsumptionSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for efficient queries
+
 energyConsumptionSchema.index({ institute: 1, timestamp: -1 });
 energyConsumptionSchema.index({ buildingName: 1, departmentName: 1 });
 energyConsumptionSchema.index({ timestamp: -1 });
 
-// Static method to get consumption by institute
+
 energyConsumptionSchema.statics.getByInstitute = function(institute, startDate = null, endDate = null) {
   const query = { institute };
   
@@ -73,7 +73,7 @@ energyConsumptionSchema.statics.getByInstitute = function(institute, startDate =
   return this.find(query).sort({ timestamp: -1 });
 };
 
-// Static method to get aggregated data by department for an institute
+
 energyConsumptionSchema.statics.getDepartmentAggregation = function(institute) {
   return this.aggregate([
     { $match: { institute } },
@@ -113,7 +113,7 @@ energyConsumptionSchema.statics.getDepartmentAggregation = function(institute) {
   ]);
 };
 
-// Static method to get building aggregation
+
 energyConsumptionSchema.statics.getBuildingAggregation = function(institute) {
   return this.aggregate([
     { $match: { institute } },
@@ -141,7 +141,7 @@ energyConsumptionSchema.statics.getBuildingAggregation = function(institute) {
   ]);
 };
 
-// Static method to get monthly data for charts
+
 energyConsumptionSchema.statics.getMonthlyData = function(institute, months = 6) {
   const startDate = new Date();
   startDate.setMonth(startDate.getMonth() - months);

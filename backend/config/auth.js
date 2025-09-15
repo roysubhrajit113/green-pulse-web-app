@@ -1,4 +1,4 @@
-// backend/config/auth.js
+
 const dotenv = require('dotenv');
 dotenv.config();
 

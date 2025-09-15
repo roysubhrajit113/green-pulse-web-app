@@ -1,4 +1,4 @@
-/* eslint-disable */
+
 
 import {
   Box,
@@ -35,11 +35,11 @@ export default function CarbonComplexTable(props) {
   const textColor = useColorModeValue('green.900', 'white');
   const borderColor = useColorModeValue('green.200', 'whiteAlpha.100');
   
-  // Get transaction data from carbon context
+
   const { dashboardData } = useCarbon();
   const transactions = dashboardData?.transactions || [];
   
-  // Convert transactions to table format
+
   const defaultData = transactions.map(tx => ({
     type: tx.type,
     amount: tx.amount,
@@ -138,7 +138,7 @@ export default function CarbonComplexTable(props) {
           cursor="pointer"
           _hover={{ textDecoration: 'underline' }}
           onClick={() => {
-            // Copy to clipboard or open in blockchain explorer
+
             navigator.clipboard.writeText(info.getValue());
             alert('Transaction hash copied to clipboard!');
           }}

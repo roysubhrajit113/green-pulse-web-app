@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const Building = require('../models/Building'); // Adjust path as needed
+const Building = require('../models/Building');
 
-// GET /api/buildings?institute=<name>
-// Get buildings by institute name
+
+
 router.get('/', async (req, res) => {
   try {
     const { institute } = req.query;
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
       });
     }
 
-    // Find buildings for the specified institute
+
     const buildings = await Building.find({ institute: institute });
     
     console.log(`Found ${buildings.length} buildings for institute: ${institute}`);

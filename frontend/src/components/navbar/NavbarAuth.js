@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-// Chakra imports
+
 import {
   Box,
   Button,
@@ -21,20 +21,20 @@ import {
   SimpleGrid,
 } from "@chakra-ui/react";
 
-// Custom components
+
 import IconBox from "components/icons/IconBox";
 import { HorizonLogo } from "components/icons/Icons";
 import { SidebarResponsive } from "components/sidebar/Sidebar";
 import { SidebarContext } from "contexts/SidebarContext";
 
-// Assets
+
 import { GoChevronDown, GoChevronRight } from "react-icons/go";
 import routes from "routes.js";
 
 export default function AuthNavbar(props) {
   const { logo, logoText, secondary, sidebarWidth, ...rest } = props;
   const { colorMode } = useColorMode();
-  // Menu States
+
   const {
     isOpen: isOpenAuth,
     onOpen: onOpenAuth,
@@ -55,7 +55,7 @@ export default function AuthNavbar(props) {
     onOpen: onOpenNft,
     onClose: onCloseNft,
   } = useDisclosure();
-  // Menus
+
   function getLinks(routeName) {
     let foundRoute = routes.filter(function (route) {
       return route.items && route.name === routeName;
@@ -79,7 +79,7 @@ export default function AuthNavbar(props) {
   let dashboardsObject = getLinks("Dashboards");
   let nftsObject = getLinks("NFTs");
   let logoColor = useColorModeValue("white", "white");
-  // Chakra color mode
+
 
   const textColor = useColorModeValue("navy.700", "white");
   let menuBg = useColorModeValue("white", "navy.900");
@@ -123,15 +123,15 @@ export default function AuthNavbar(props) {
         <HorizonLogo h='26px' w='175px' my='32px' color={logoColor} />
       </Link>
     );
-    // mainText = useColorModeValue("gray.700", "gray.200");
-    // navbarBg = useColorModeValue("white", "navy.800");
-    // navbarShadow = useColorModeValue(
-    //   "0px 7px 23px rgba(0, 0, 0, 0.05)",
-    //   "none"
-    // );
-    // bgButton = useColorModeValue("gray.700", "white");
-    // colorButton = useColorModeValue("white", "gray.700");
-    // navbarPosition = "fixed";
+
+
+
+
+
+
+
+
+
   }
   const createNftsLinks = (routes) => {
     return routes.map((link, key) => {
@@ -324,32 +324,7 @@ export default function AuthNavbar(props) {
               <SimpleGrid columns='3' gap='10px' minW='500px' me='20px'>
                 {createAuthLinks(authObject)}
               </SimpleGrid>
-              {/* <Flex
-                bg='red'
-                direction='column'
-                justify='center'
-                align='center'
-                w='stretch'
-                minH='230px'
-                borderRadius='15px'>
-                <IconBox
-                  bg='white'
-                  color='white'
-                  borderRadius='50%'
-                  h='50px'
-                  w='50px'
-                  mb='12px'>
-                  <Icon as={AiFillStar} w='25px' h='25px' color='blue.500' />
-                </IconBox>
-                <Text
-                  fontSize='xl'
-                  fontWeight='bold'
-                  color='#fff'
-                  maxW='80%'
-                  textAlign='center'>
-                  Explore our utilities pages
-                </Text>
-              </Flex> */}
+              {}
             </Flex>
           </MenuList>
         </Menu>

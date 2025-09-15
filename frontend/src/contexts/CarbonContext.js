@@ -1,4 +1,4 @@
-// contexts/CarbonContext.js
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import carbonDataService from '../services/carbonDataService';
 import { useAuth } from './AuthContext';
@@ -36,13 +36,13 @@ export const CarbonProvider = ({ children }) => {
   const [transactions, setTransactions] = useState([]);
   const [carbonBalance, setCarbonBalance] = useState(0);
 
-  // ✅ NEW: Get institute ID helper
+
   const getInstituteId = () => {
     if (!user) return null;
     return typeof user.institute === 'object' ? user.institute.name : user.institute;
   };
 
-  // Load dashboard data from API (institute-filtered)
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -82,7 +82,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Load transaction history
+
   const loadTransactionHistory = async () => {
     const instituteId = getInstituteId();
     if (!instituteId) return;
@@ -92,7 +92,7 @@ export const CarbonProvider = ({ children }) => {
       const transactionData = await carbonDataService.getTransactionHistory(instituteId, 50, 0);
       setTransactions(transactionData);
       
-      // Also load carbon balance
+
       const balance = await carbonDataService.getCarbonBalance(instituteId);
       setCarbonBalance(balance);
       
@@ -104,7 +104,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Get transaction history (public method)
+
   const getTransactionHistory = async (limit = 50, offset = 0) => {
     const instituteId = getInstituteId();
     if (!instituteId) return [];
@@ -117,7 +117,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Get ENTO transactions (public method)
+
   const getEntoTransactions = async (limit = 50, offset = 0) => {
     const instituteId = getInstituteId();
     if (!instituteId) return [];
@@ -130,7 +130,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Submit transaction
+
   const submitTransaction = async (transactionData) => {
     const instituteId = getInstituteId();
     if (!instituteId) return { success: false, error: 'No institute ID' };
@@ -142,7 +142,7 @@ export const CarbonProvider = ({ children }) => {
         userId: user._id
       });
       
-      // Reload transaction history
+
       await loadTransactionHistory();
       
       return result;
@@ -152,7 +152,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // ✅ NEW: Verify transaction
+
   const verifyTransaction = async (txHash) => {
     try {
       return await carbonDataService.verifyTransaction(txHash);
@@ -162,24 +162,24 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // Update wallet balance
+
   const updateWalletBalance = async (amount, type = 'credit') => {
     try {
       await carbonDataService.updateWalletBalance(amount, type);
       loadDashboardData();
-      loadTransactionHistory(); // ✅ Reload transactions
+      loadTransactionHistory();
     } catch (error) {
       console.error('Error updating wallet balance:', error);
       setError(error.message);
     }
   };
 
-  // Purchase carbon offset
+
   const purchaseCarbonOffset = async (amount, description = 'Carbon offset purchase') => {
     try {
       const result = await carbonDataService.purchaseCarbonOffset(amount, description);
       loadDashboardData();
-      loadTransactionHistory(); // ✅ Reload transactions
+      loadTransactionHistory();
       return { success: true, ...result };
     } catch (err) {
       console.error('Error purchasing carbon offset:', err);
@@ -188,12 +188,12 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // Record energy consumption
+
   const recordEnergyConsumption = async (consumption, building = 'Building A') => {
     try {
       const result = await carbonDataService.recordEnergyConsumption(consumption, building);
       loadDashboardData();
-      loadTransactionHistory(); // ✅ Reload transactions
+      loadTransactionHistory();
       return { success: true, ...result };
     } catch (err) {
       console.error('Error recording energy consumption:', err);
@@ -202,7 +202,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // Get energy consumption data for charts
+
   const getEnergyConsumptionData = async () => {
     try {
       return await carbonDataService.getEnergyConsumptionData();
@@ -222,7 +222,7 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // Get weekly energy data for institutes
+
   const getWeeklyEnergyData = async () => {
     try {
       return await carbonDataService.getWeeklyEnergyData();
@@ -232,27 +232,27 @@ export const CarbonProvider = ({ children }) => {
     }
   };
 
-  // Refresh data
+
   const refreshData = () => {
     loadDashboardData();
     loadTransactionHistory();
   };
 
-  // Load dashboard data when component mounts or when user changes
+
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('Loading dashboard data for user:', user.email, 'institute:', user.institute);
       loadDashboardData();
       loadTransactionHistory();
     } else if (!isAuthenticated) {
-      // Clear data when user logs out
+
       setDashboardData(null);
       setTransactions([]);
       setCarbonBalance(0);
       setError(null);
       setLoading(false);
     }
-  }, [user, isAuthenticated]); // Reload data whenever user changes
+  }, [user, isAuthenticated]);
 
   const value = {
     dashboardData,

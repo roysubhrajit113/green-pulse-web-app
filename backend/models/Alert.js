@@ -55,7 +55,7 @@ const alertSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for efficient querying
+
 alertSchema.index({ user_id: 1, status: 1 });
 alertSchema.index({ building_id: 1, status: 1 });
 alertSchema.index({ timestamp: -1 });

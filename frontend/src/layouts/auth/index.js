@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
-// Chakra imports
+
 import { Box, useColorModeValue } from '@chakra-ui/react';
 
-// Layout components
+
 import { SidebarContext } from 'contexts/SidebarContext';
 
-// Auth components
+
 import SignIn from 'views/auth/signIn';
 import SignUp from 'views/auth/signUp';
 import ForgotPassword from 'views/auth/forgotPassword';
 
-// Custom Chakra theme
+
 export default function Auth() {
-  // states and functions
+
   const [toggleSidebar, setToggleSidebar] = useState(false);
-  // functions for changing the states from components
+
   const getRoute = () => {
     return window.location.pathname !== '/auth/full-screen-maps';
   };

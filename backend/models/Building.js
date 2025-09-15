@@ -39,7 +39,7 @@ const buildingSchema = new mongoose.Schema({
   collection: 'building_data'
 });
 
-// Compound index for efficient institute-based queries
+
 buildingSchema.index({ institute: 1, building_id: 1 });
 
 module.exports = mongoose.model('Building', buildingSchema);

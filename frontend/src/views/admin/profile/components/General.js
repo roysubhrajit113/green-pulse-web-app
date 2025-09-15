@@ -1,14 +1,14 @@
-// Chakra imports
+
 import { SimpleGrid, Text, useColorModeValue } from "@chakra-ui/react";
-// Custom components
+
 import Card from "components/card/CarbonCard.js";
 import React from "react";
 import Information from "views/admin/profile/components/Information";
 
-// Assets
+
 export default function GeneralInformation(props) {
   const { ...rest } = props;
-  // Chakra Color Mode
+
   const textColorPrimary = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = "gray.400";
   const cardShadow = useColorModeValue(

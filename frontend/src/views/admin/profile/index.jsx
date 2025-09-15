@@ -48,17 +48,17 @@ import {
   MdBusiness,
 } from "react-icons/md";
 
-// Assets
+
 import banner from "assets/img/auth/banner.png";
 import avatar from "assets/img/avatars/avatarSimmmple.png";
 
-// Import Auth Context and Service
+
 import { useAuth } from "contexts/AuthContext";
 import { useCarbon } from "contexts/CarbonContext";
 import authService from "services/authService";
 
 export default function ProfilePage() {
-  // ✅ ALL HOOKS AT TOP LEVEL - Fix for ESLint error
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
   const cardBg = useColorModeValue("white", "navy.800");
@@ -76,7 +76,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const { user, updateUserData } = useAuth();
   
-  // ✅ Get real data from Carbon context
+
   const { 
     dashboardData, 
     carbonBalance, 
@@ -87,7 +87,7 @@ export default function ProfilePage() {
     error: carbonError 
   } = useCarbon();
 
-  // State management
+
   const [personalInfo, setPersonalInfo] = useState({
     name: "",
     department: "",
@@ -132,18 +132,18 @@ export default function ProfilePage() {
   const [postText, setPostText] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // ✅ Process transaction data into monthly savings
+
   const processTransactionData = (transactions) => {
     const monthlyMap = {};
     const currentYear = new Date().getFullYear();
     
-    // Initialize with zeros for all months
+
     for (let i = 0; i < 12; i++) {
       const monthName = new Date(currentYear, i).toLocaleString('default', { month: 'short' });
       monthlyMap[monthName] = { entoSaved: 0, co2Saved: 0 };
     }
 
-    // Process transactions
+
     transactions.forEach(tx => {
       const date = new Date(tx.date || tx.createdAt);
       if (date.getFullYear() === currentYear) {
@@ -164,7 +164,7 @@ export default function ProfilePage() {
     }));
   };
 
-  // ✅ Calculate total ENTO saved from transactions
+
   const calculateTotalEntoSaved = (transactions) => {
     return transactions.reduce((total, tx) => {
       if (tx.type === 'carbon_offset_purchase' || tx.type === 'ento_transfer') {
@@ -174,24 +174,24 @@ export default function ProfilePage() {
     }, 0);
   };
 
-  // ✅ Load real carbon and energy data
+
   const loadCarbonData = async () => {
     try {
-      // Get energy consumption data
+
       const energyConsumption = await getEnergyConsumptionData();
       setEnergyData(energyConsumption);
 
-      // Get recent transactions for trends
+
       const transactionHistory = await getTransactionHistory(50, 0);
       setRecentTransactions(transactionHistory);
 
-      // Process transactions into monthly savings data
+
       if (transactionHistory && transactionHistory.length > 0) {
         const monthlyData = processTransactionData(transactionHistory);
         setSavingsData(monthlyData);
       }
 
-      // Update department stats from dashboard data
+
       if (dashboardData) {
         setDepartmentStats(prev => ({
           ...prev,
@@ -211,7 +211,7 @@ export default function ProfilePage() {
     }
   };
 
-  // Load user data on component mount
+
   useEffect(() => {
     const loadUserData = async () => {
       const savedProfileData = localStorage.getItem('profileData');
@@ -295,14 +295,14 @@ export default function ProfilePage() {
     loadUserData();
   }, []);
 
-  // Load carbon data when dashboard data is available
+
   useEffect(() => {
     if (dashboardData && personalInfo.name) {
       loadCarbonData();
     }
   }, [dashboardData, personalInfo.name]);
 
-  // Sync editData with personalInfo when not editing
+
   useEffect(() => {
     if (!isEditing && personalInfo.name) {
       setEditData({
@@ -472,7 +472,7 @@ export default function ProfilePage() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      {/* Header Section */}
+      {}
       <Flex justify="space-between" align="center" mb="30px">
         <Box>
           <Heading color={textColor} fontSize="2xl" fontWeight="bold">
@@ -526,7 +526,7 @@ export default function ProfilePage() {
         </Flex>
       </Flex>
 
-      {/* Profile Banner Card */}
+      {}
       <Card bg={cardBg} mb="30px" borderColor={borderColor} overflow="hidden">
         <Box
           h="250px"
@@ -591,7 +591,7 @@ export default function ProfilePage() {
         </Box>
         
         <CardBody p="30px">
-          {/* Department Statistics */}
+          {}
           <SimpleGrid columns={{ base: 2, md: 4 }} gap="20px" mb="30px">
             <Stat textAlign="center">
               <StatLabel color={textColorSecondary} fontSize="sm">Department</StatLabel>
@@ -658,10 +658,10 @@ export default function ProfilePage() {
             </Stat>
           </SimpleGrid>
 
-          {/* Profile Content */}
+          {}
           <Box px="0" py="30px">
             <SimpleGrid columns={{ base: 1, lg: 2 }} gap="30px">
-              {/* About Me Section */}
+              {}
               <Card bg={cardBg} borderColor={borderColor}>
                 <CardHeader>
                   <Heading size="md" color={textColor}>
@@ -765,7 +765,7 @@ export default function ProfilePage() {
                       </HStack>
                     </VStack>
 
-                    {/* Post Section */}
+                    {}
                     <Divider my="4" />
                     <VStack spacing="3" align="stretch">
                       <Text color={textColorSecondary} fontSize="sm" fontWeight="500">
@@ -797,7 +797,7 @@ export default function ProfilePage() {
                 </CardBody>
               </Card>
 
-              {/* ✅ Real Savings Graph from transaction data */}
+              {}
               <Card bg={cardBg} borderColor={borderColor}>
                 <CardHeader>
                   <HStack>
@@ -817,7 +817,7 @@ export default function ProfilePage() {
                     </Flex>
                   ) : (
                     <VStack spacing="6" align="stretch">
-                      {/* Summary Stats from real data */}
+                      {}
                       <SimpleGrid columns={2} gap="4">
                         <Stat textAlign="center" p="4" bg={subtleBg} borderRadius="lg">
                           <StatLabel color={textColorSecondary} fontSize="sm">Total ENTO Saved</StatLabel>
@@ -839,7 +839,7 @@ export default function ProfilePage() {
                         </Stat>
                       </SimpleGrid>
 
-                      {/* ✅ FIXED: Simple Bar Chart from real data - NO HOOKS IN CALLBACKS */}
+                      {}
                       {savingsData.length > 0 ? (
                         <Box>
                           <Text color={textColorSecondary} fontSize="sm" mb="4" textAlign="center">
@@ -889,7 +889,7 @@ export default function ProfilePage() {
                         </Flex>
                       )}
 
-                      {/* Recent Transactions */}
+                      {}
                       {recentTransactions.length > 0 && (
                         <Box>
                           <Text color={textColorSecondary} fontSize="sm" mb="3" fontWeight="500">
@@ -932,7 +932,7 @@ export default function ProfilePage() {
                         </Box>
                       )}
 
-                      {/* Growth Indicator from real data */}
+                      {}
                       {savingsData.length > 1 && (
                         <HStack justify="center" p="3" bg={subtleBg} borderRadius="lg">
                           <Icon as={MdTrendingUp} color={successColor} w="20px" h="20px" />

@@ -46,10 +46,10 @@ async function seedData() {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
     
-    // Clear existing data
+
     await CarbonTransaction.deleteMany({});
     
-    // Insert sample data
+
     await CarbonTransaction.insertMany(sampleTransactions);
     
     console.log('✅ Carbon transaction data seeded successfully');

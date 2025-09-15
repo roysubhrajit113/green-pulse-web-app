@@ -1,6 +1,6 @@
-// Chakra imports
+
 import { Box, Flex, Text, Select, useColorModeValue } from "@chakra-ui/react";
-// Custom components
+
 import Card from "components/card/CarbonCard.js";
 import PieChart from "components/charts/PieChart";
 import { pieChartOptions } from "variables/charts";
@@ -10,7 +10,7 @@ import { useDepartment } from "contexts/DepartmentContext";
 export default function Conversion(props) {
   const { ...rest } = props;
 
-  // Chakra Color Mode
+
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const textColorSecondary = useColorModeValue("secondaryGray.600", "secondaryGray.400");
   const cardColor = useColorModeValue("white", "navy.700");
@@ -19,11 +19,11 @@ export default function Conversion(props) {
     "unset"
   );
 
-  // Department data context
+
   const { getEnergyConsumptionByDepartment } = useDepartment();
   const departmentData = getEnergyConsumptionByDepartment() || [];
 
-  // Calculate department energy usage percentages
+
   const totalEnergy = departmentData.length > 0 
     ? departmentData.reduce((sum, dept) => sum + (dept.consumption || 0), 0)
     : 0;
@@ -37,11 +37,11 @@ export default function Conversion(props) {
       }))
     : [];
 
-  // Generate pie chart data
+
   const pieData = departmentPercentages.map(item => item.percentage);
   const pieLabels = departmentPercentages.map(item => item.building);
   
-  // Ensure we have valid data
+
   if (pieData.length === 0 || pieData.every(val => val === 0)) {
     return (
       <Card p='20px' align='center' direction='column' w='100%' {...rest}>

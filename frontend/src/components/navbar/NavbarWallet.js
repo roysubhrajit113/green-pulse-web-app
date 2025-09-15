@@ -1,4 +1,4 @@
-// Chakra Imports
+
 import {
   Box,
   Flex,
@@ -17,7 +17,7 @@ import React, { useState, useEffect } from "react";
 import { MdAccountBalanceWallet, MdSettings, MdNotifications } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 
-// Custom imports
+
 import { useAuth } from "contexts/AuthContext";
 import { generateInitials, getDisplayName } from "utils/userUtils";
 
@@ -36,19 +36,19 @@ export default function WalletNavbar(props) {
 
   const { secondary, message, brandText } = props;
 
-  // Handle profile settings navigation
+
   const handleProfileSettings = () => {
     navigate('/admin/profile');
   };
 
-  // Handle logout
+
   const handleLogout = () => {
     localStorage.clear();
     sessionStorage.clear();
     navigate('/auth/sign-in');
   };
 
-  // Here are all the props that may change depending on navbar's type or state.(secondary, variant, scrolled)
+
   let mainText = useColorModeValue("navy.700", "white");
   let secondaryText = useColorModeValue("gray.700", "white");
   let navbarPosition = "fixed";

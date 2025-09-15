@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 
 const carbonDataSchema = new mongoose.Schema({
   institute: {
-    type: mongoose.Schema.Types.Mixed, // Can be string or object (for backward compatibility)
+    type: mongoose.Schema.Types.Mixed,
     required: true,
-    index: true // Index for efficient institute-based queries
+    index: true
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -12,7 +12,7 @@ const carbonDataSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  // Carbon tracking data
+
   co2Savings: {
     type: Number,
     default: 0
@@ -33,7 +33,7 @@ const carbonDataSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  // Energy consumption data
+
   currentEnergyConsumption: {
     type: Number,
     default: 0
@@ -44,7 +44,7 @@ const carbonDataSchema = new mongoose.Schema({
     efficiency: Number,
     date: { type: Date, default: Date.now }
   }],
-  // Building-wise data
+
   buildingData: [{
     buildingName: String,
     consumption: Number,
@@ -52,16 +52,16 @@ const carbonDataSchema = new mongoose.Schema({
     carbonFootprint: Number,
     lastUpdated: { type: Date, default: Date.now }
   }],
-  // Department-wise data
+
   departmentData: [{
     departmentName: String,
     consumption: Number,
     efficiency: Number,
     carbonFootprint: Number,
-    color: String, // For chart visualization
+    color: String,
     lastUpdated: { type: Date, default: Date.now }
   }],
-  // Transaction history
+
   transactions: [{
     type: {
       type: String,
@@ -76,7 +76,7 @@ const carbonDataSchema = new mongoose.Schema({
     blockchainTxHash: String,
     date: { type: Date, default: Date.now }
   }],
-  // Analytics data
+
   analytics: {
     totalReductionInitiatives: { type: Number, default: 0 },
     carbonValue: { type: Number, default: 0 },
@@ -95,10 +95,10 @@ const carbonDataSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for efficient queries by institute and user
+
 carbonDataSchema.index({ institute: 1, userId: 1 });
 
-// Static method to get institute identifier for consistent querying
+
 carbonDataSchema.statics.getInstituteIdentifier = function(institute) {
   if (!institute) return null;
   
@@ -113,7 +113,7 @@ carbonDataSchema.statics.getInstituteIdentifier = function(institute) {
   return String(institute).toLowerCase();
 };
 
-// Instance method to check if data belongs to specific institute
+
 carbonDataSchema.methods.belongsToInstitute = function(targetInstitute) {
   const thisInstitute = this.constructor.getInstituteIdentifier(this.institute);
   const checkInstitute = this.constructor.getInstituteIdentifier(targetInstitute);

@@ -1,4 +1,4 @@
-// Simple test component to verify institute-specific system works
+
 import React, { useEffect, useState } from 'react';
 import { Box, Text, Heading, VStack, Alert, AlertIcon } from '@chakra-ui/react';
 import { useCarbon } from 'contexts/CarbonContext';

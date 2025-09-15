@@ -1,11 +1,11 @@
-/* eslint-disable */
+
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
-// chakra imports
+
 import { Box, Flex, HStack, Text, useColorModeValue } from "@chakra-ui/react";
 
 export function SidebarLinks(props) {
-  //   Chakra color mode
+
   let location = useLocation();
   let activeColor = useColorModeValue("gray.700", "white");
   let inactiveColor = useColorModeValue(
@@ -18,12 +18,12 @@ export function SidebarLinks(props) {
 
   const { routes } = props;
 
-  // verifies if routeName is the one active (in browser input)
+
   const activeRoute = (routeName) => {
     return location.pathname.includes(routeName);
   };
 
-  // this function creates the links from the secondary accordions (for example auth -> sign-in -> default)
+
   const createLinks = (routes) => {
     return routes.map((route, index) => {
       if (route.category) {
@@ -127,7 +127,7 @@ export function SidebarLinks(props) {
       }
     });
   };
-  //  BRAND
+
   return createLinks(routes);
 }
 

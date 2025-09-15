@@ -10,9 +10,9 @@ export const useInstitute = () => {
   return context;
 };
 
-// API service functions
+
 const instituteAPI = {
-  // Fetch all institutes
+
   async fetchInstitutes() {
     try {
       console.log('Attempting to fetch institutes from API...');
@@ -21,7 +21,7 @@ const instituteAPI = {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies if needed for authentication
+        credentials: 'include',
       });
       
       console.log('API Response Status:', response.status);
@@ -41,7 +41,7 @@ const instituteAPI = {
     }
   },
 
-  // Fetch single institute by ID
+
   async fetchInstituteById(id) {
     try {
       const response = await fetch(`http://localhost:5000/api/institutes/${id}`, {
@@ -62,7 +62,7 @@ const instituteAPI = {
     }
   },
 
-  // Update institute
+
   async updateInstitute(id, updates) {
     try {
       const response = await fetch(`http://localhost:5000/api/institutes/${id}`, {
@@ -84,7 +84,7 @@ const instituteAPI = {
     }
   },
 
-  // Add new institute
+
   async addInstitute(instituteData) {
     try {
       const response = await fetch('http://localhost:5000/api/institutes', {
@@ -106,7 +106,7 @@ const instituteAPI = {
     }
   },
 
-  // Delete institute
+
   async deleteInstitute(id) {
     try {
       const response = await fetch(`http://localhost:5000/api/institutes/${id}`, {
@@ -134,7 +134,7 @@ export const InstituteProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Load institutes data from MongoDB
+
   useEffect(() => {
     const loadInstitutes = async () => {
       try {
@@ -142,7 +142,7 @@ export const InstituteProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        // Fetch institutes from MongoDB via API
+
         console.log('Calling fetchInstitutes API...');
         const data = await instituteAPI.fetchInstitutes();
         
@@ -154,7 +154,7 @@ export const InstituteProvider = ({ children }) => {
         console.log(`Successfully loaded ${data.length} institutes`);
         setInstitutes(data);
         
-        // Load current institute from localStorage
+
         const savedInstituteId = localStorage.getItem('greenpulse_current_institute');
         console.log('Saved institute ID from localStorage:', savedInstituteId);
         
@@ -165,13 +165,13 @@ export const InstituteProvider = ({ children }) => {
             setCurrentInstitute(institute);
           } else {
             console.log('Saved institute not found, using first institute as default');
-            // If saved institute not found, set first institute as default
+
             setCurrentInstitute(data[0]);
             localStorage.setItem('greenpulse_current_institute', data[0].id);
           }
         } else if (data.length > 0) {
           console.log('No saved institute, using first institute as default');
-          // Set first institute as default if no saved selection
+
           setCurrentInstitute(data[0]);
           localStorage.setItem('greenpulse_current_institute', data[0].id);
         } else {
@@ -189,7 +189,7 @@ export const InstituteProvider = ({ children }) => {
     loadInstitutes();
   }, []);
 
-  // Set current institute
+
   const selectInstitute = async (instituteId) => {
     try {
       const institute = institutes.find(inst => inst.id === instituteId);
@@ -197,7 +197,7 @@ export const InstituteProvider = ({ children }) => {
         setCurrentInstitute(institute);
         localStorage.setItem('greenpulse_current_institute', instituteId);
       } else {
-        // If not found in current list, fetch from API
+
         const fetchedInstitute = await instituteAPI.fetchInstituteById(instituteId);
         setCurrentInstitute(fetchedInstitute);
         localStorage.setItem('greenpulse_current_institute', instituteId);
@@ -208,12 +208,12 @@ export const InstituteProvider = ({ children }) => {
     }
   };
 
-  // Get institute by campus ID
+
   const getInstituteByCampusId = (campusId) => {
     return institutes.find(inst => inst.campusId === campusId);
   };
 
-  // Get institute statistics
+
   const getInstituteStats = () => {
     if (!currentInstitute) return null;
 
@@ -228,22 +228,22 @@ export const InstituteProvider = ({ children }) => {
     };
   };
 
-  // Update institute data
+
   const updateInstitute = async (instituteId, updates) => {
     try {
       setLoading(true);
       
-      // Update in database via API
+
       const updatedInstitute = await instituteAPI.updateInstitute(instituteId, updates);
       
-      // Update local state
+
       setInstitutes(prevInstitutes => 
         prevInstitutes.map(inst => 
           inst.id === instituteId ? { ...inst, ...updates } : inst
         )
       );
 
-      // Update current institute if it's the one being updated
+
       if (currentInstitute && currentInstitute.id === instituteId) {
         setCurrentInstitute(prev => ({ ...prev, ...updates }));
       }
@@ -258,18 +258,18 @@ export const InstituteProvider = ({ children }) => {
     }
   };
 
-  // Add new institute (admin function)
+
   const addInstitute = async (instituteData) => {
     try {
       setLoading(true);
       
-      // Add to database via API
+
       const newInstitute = await instituteAPI.addInstitute({
         ...instituteData,
         established: instituteData.established || new Date().getFullYear().toString()
       });
       
-      // Update local state
+
       setInstitutes(prevInstitutes => [...prevInstitutes, newInstitute]);
       
       return newInstitute;
@@ -282,20 +282,20 @@ export const InstituteProvider = ({ children }) => {
     }
   };
 
-  // Remove institute (admin function)
+
   const removeInstitute = async (instituteId) => {
     try {
       setLoading(true);
       
-      // Delete from database via API
+
       await instituteAPI.deleteInstitute(instituteId);
       
-      // Update local state
+
       setInstitutes(prevInstitutes => 
         prevInstitutes.filter(inst => inst.id !== instituteId)
       );
 
-      // Clear current institute if it's being removed
+
       if (currentInstitute && currentInstitute.id === instituteId) {
         setCurrentInstitute(null);
         localStorage.removeItem('greenpulse_current_institute');
@@ -309,7 +309,7 @@ export const InstituteProvider = ({ children }) => {
     }
   };
 
-  // Refresh institutes data
+
   const refreshInstitutes = async () => {
     try {
       setLoading(true);

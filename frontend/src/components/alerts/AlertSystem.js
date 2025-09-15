@@ -29,15 +29,15 @@ const AlertSystem = () => {
   const [alerts, setAlerts] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [thresholds] = useState({
-    energyConsumption: 3000, // kWh
-    co2Savings: 200, // tonnes
-    carbonBudget: 800, // ENTO
-    efficiency: 70 // percentage
+    energyConsumption: 3000,
+    co2Savings: 200,
+    carbonBudget: 800,
+    efficiency: 70
   });
 
   const { getEnergyConsumptionData, dashboardData } = useCarbon();
 
-  // Alert types and their configurations
+
   const alertTypes = {
     energy_spike: {
       icon: MdWarning,
@@ -71,7 +71,7 @@ const AlertSystem = () => {
     }
   };
 
-  // Check for threshold violations and generate alerts
+
   useEffect(() => {
     if (!dashboardData) return;
 
@@ -79,7 +79,7 @@ const AlertSystem = () => {
     const energyData = getEnergyConsumptionData();
     const currentTime = new Date().toISOString();
 
-    // Check energy consumption threshold
+
     if (energyData.current > thresholds.energyConsumption) {
       newAlerts.push({
         id: `energy_${Date.now()}`,
@@ -91,7 +91,7 @@ const AlertSystem = () => {
       });
     }
 
-    // Check CO₂ savings threshold
+
     if (dashboardData.co2Savings < thresholds.co2Savings) {
       newAlerts.push({
         id: `co2_${Date.now()}`,
@@ -102,7 +102,7 @@ const AlertSystem = () => {
       });
     }
 
-    // Check carbon budget threshold
+
     if (dashboardData.carbonBudgetUsed > thresholds.carbonBudget) {
       newAlerts.push({
         id: `budget_${Date.now()}`,
@@ -113,7 +113,7 @@ const AlertSystem = () => {
       });
     }
 
-    // Check efficiency threshold
+
     const currentEfficiency = energyData.efficiency[energyData.efficiency.length - 1];
     if (currentEfficiency < thresholds.efficiency) {
       newAlerts.push({
@@ -126,7 +126,7 @@ const AlertSystem = () => {
       });
     }
 
-    // Add success alerts for good performance
+
     if (currentEfficiency >= 90) {
       newAlerts.push({
         id: `success_${Date.now()}`,
@@ -137,11 +137,11 @@ const AlertSystem = () => {
       });
     }
 
-    // Update alerts state
+
     setAlerts(prevAlerts => {
       const existingIds = new Set(prevAlerts.map(alert => alert.id));
       const uniqueNewAlerts = newAlerts.filter(alert => !existingIds.has(alert.id));
-      return [...uniqueNewAlerts, ...prevAlerts].slice(0, 10); // Keep only last 10 alerts
+      return [...uniqueNewAlerts, ...prevAlerts].slice(0, 10);
     });
   }, [dashboardData, thresholds, getEnergyConsumptionData]);
 

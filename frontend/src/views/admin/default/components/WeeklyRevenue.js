@@ -1,4 +1,4 @@
-// Chakra imports
+
 import {
   Box,
   Button,
@@ -18,7 +18,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import Card from "components/card/CarbonCard.js";
-// Custom components
+
 import BarChart from "components/charts/BarChart";
 import React, { useState, useEffect } from "react";
 import {
@@ -30,7 +30,7 @@ import { useCarbon } from "contexts/CarbonContext";
 export default function WeeklyRevenue(props) {
   const { ...rest } = props;
 
-  // Chakra Color Mode
+
   const textColor = useColorModeValue("secondaryGray.900", "white");
   const iconColor = useColorModeValue("brand.500", "white");
   const bgButton = useColorModeValue("secondaryGray.300", "whiteAlpha.100");
@@ -43,7 +43,7 @@ export default function WeeklyRevenue(props) {
     { bg: "whiteAlpha.100" }
   );
 
-  // Carbon data context
+
   const { getWeeklyEnergyData } = useCarbon();
   const [weeklyEnergyData, setWeeklyEnergyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export default function WeeklyRevenue(props) {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
 
-  // ✅ ENHANCED: Fetch weekly energy data with comprehensive error handling
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -71,7 +71,7 @@ export default function WeeklyRevenue(props) {
         return;
       }
 
-      // ✅ Validate data structure
+
       const validData = data.filter(item => 
         item && 
         typeof item === 'object' && 
@@ -91,7 +91,7 @@ export default function WeeklyRevenue(props) {
       console.log('✅ WeeklyRevenue: Valid data items:', validData.length);
       setWeeklyEnergyData(validData);
       
-      // Extract unique institution names from the data
+
       const uniqueInstitutions = [...new Set(validData.map(item => {
         const nameParts = item.name.split(' - ');
         return nameParts.length > 1 ? nameParts[0] : 'Unknown Institute';
@@ -100,7 +100,7 @@ export default function WeeklyRevenue(props) {
       console.log('🏫 WeeklyRevenue: Extracted institutions:', uniqueInstitutions);
       setInstitutions(uniqueInstitutions);
       
-      // Determine data source
+
       const source = validData.length > 0 && validData[0].source === 'mongodb' ? 'mongodb' : 'sample';
       console.log('📡 WeeklyRevenue: Data source detected:', source);
       setDataSource(source);
@@ -116,7 +116,7 @@ export default function WeeklyRevenue(props) {
     }
   };
 
-  // Fetch data on component mount and context change
+
   useEffect(() => {
     console.log('🔄 WeeklyRevenue: useEffect triggered with getWeeklyEnergyData:', typeof getWeeklyEnergyData);
     if (getWeeklyEnergyData) {
@@ -129,7 +129,7 @@ export default function WeeklyRevenue(props) {
     }
   }, [getWeeklyEnergyData]);
 
-  // ✅ ENHANCED: Filter data based on selected institution with validation
+
   const filteredData = selectedInstitution === 'all' 
     ? weeklyEnergyData 
     : weeklyEnergyData.filter(item => {
@@ -137,7 +137,7 @@ export default function WeeklyRevenue(props) {
         return item.name.toLowerCase().includes(selectedInstitution.toLowerCase());
       });
 
-  // ✅ ENHANCED: Get badge properties based on data source
+
   const getBadgeProps = () => {
     switch(dataSource) {
       case 'mongodb': 
@@ -155,13 +155,13 @@ export default function WeeklyRevenue(props) {
 
   const badgeProps = getBadgeProps();
 
-  // ✅ ENHANCED: Manual refresh function
+
   const handleRefresh = async () => {
     console.log('🔄 WeeklyRevenue: Manual refresh triggered');
     await fetchData();
   };
 
-  // ✅ ENHANCED: Reset filter function
+
   const handleResetFilter = () => {
     setSelectedInstitution('all');
     setError(null);
@@ -169,9 +169,9 @@ export default function WeeklyRevenue(props) {
 
   return (
     <Card align='center' direction='column' w='100%' {...rest}>
-      {/* ✅ FIXED: Improved header layout with better spacing and responsiveness */}
+      {}
       <Box w='100%' px='15px' py='10px'>
-        {/* Main title */}
+        {}
         <Flex justify="space-between" align="center" mb="3">
           <Text
             color={textColor}
@@ -183,7 +183,7 @@ export default function WeeklyRevenue(props) {
             Weekly Energy Consumption
           </Text>
           
-          {/* Controls section */}
+          {}
           <HStack spacing="2" flexShrink="0">
             <Select
               value={selectedInstitution}
@@ -233,7 +233,7 @@ export default function WeeklyRevenue(props) {
           </HStack>
         </Flex>
 
-        {/* ✅ FIXED: Status indicators with proper wrapping */}
+        {}
         <Flex 
           align="center" 
           wrap="wrap" 

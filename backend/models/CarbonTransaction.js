@@ -19,12 +19,12 @@ const carbonTransactionSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: [
-      // ✅ Existing transaction types
+
       'carbon_offset_purchase',
       'ento_transfer', 
       'energy_consumption',
       
-      // ✅ NEW: Add wallet transaction types
+
       'energy_pack_purchase',
       'loan_application',
       'loan_payment',

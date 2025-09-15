@@ -1,28 +1,28 @@
-// scripts/roles.js
-// Role management utility (npm + Hardhat + ethers v6) for your JS project layout.
-// Safely grants/revokes/rotates roles across your contracts using addresses from deploy/deployments/<network>.json.
-//
-// Usage examples:
-//   - Show current role holders (where available):
-//       npx hardhat run --network localhost scripts/roles.js --show
-//   - Grant Oracle roles:
-//       npx hardhat run --network localhost scripts/roles.js --grant-oracle --meter <METER_ADDR> --feeder <FEEDER_ADDR>
-//   - Rotate treasury on FiatGateway:
-//       npx hardhat run --network localhost scripts/roles.js --rotate-treasury --new-treasury <ADDR>
-//   - Grant gateway roles to distinct ops:
-//       npx hardhat run --network localhost scripts/roles.js --gateway-roles --feeder <ADDR> --settlement <ADDR>
-//   - Grant token roles to Oracle (mint/burn):
-//       npx hardhat run --network localhost scripts/roles.js --token-roles-for-oracle
-//
-// Notes:
-// - Must be run by an account that holds the relevant admin roles on each contract.
-// - Reads addresses from deploy/deployments/<network>.json produced by scripts/deploy.js.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const fs = require("fs");
 const path = require("path");
 const { ethers, network } = require("hardhat");
 
-// ---------- CLI ARG PARSER (minimal) ----------
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const flags = {};
@@ -55,17 +55,17 @@ async function showInfo(addrs) {
   console.log("Known role holders (from deployments file):");
   console.table(R);
 
-  // Optionally query some on-chain role states to verify
+
   try {
     const oracle = await ethers.getContractAt("EnergyOracle", A.EnergyOracle);
     const ORACLE_ROLE = await oracle.ORACLE_ROLE();
-    // You can probe a few addrs:
+
     for (const who of [R.oracleCommittee, R.admin].filter(Boolean)) {
       const has = await oracle.hasRole(ORACLE_ROLE, who);
       console.log(`EnergyOracle.ORACLE_ROLE(${who}) = ${has}`);
     }
   } catch {
-    // best-effort only
+
   }
 
   try {
@@ -78,7 +78,7 @@ async function showInfo(addrs) {
       console.log(`FiatGateway: priceFeeder? ${who}=${isFeeder}, settlement?=${isSettl}`);
     }
   } catch {
-    // best-effort only
+
   }
 }
 
@@ -121,7 +121,7 @@ async function grantTokenRolesForOracle(addrs) {
   await (await token.connect(adminSigner).grantRole(MINTER_ROLE, oracleAddr)).wait();
   await (await token.connect(adminSigner).grantRole(BURNER_ROLE, oracleAddr)).wait();
 
-  // Optional: grant TREASURY_ROLE to treasury if your token uses it
+
   if (token.TREASURY_ROLE && R.treasury) {
     const TREASURY_ROLE = await token.TREASURY_ROLE();
     const has = await token.hasRole(TREASURY_ROLE, R.treasury);
@@ -164,17 +164,17 @@ async function rotateTreasury(addrs, opts) {
     throw new Error("Missing --new-treasury <address> for treasury rotation.");
   }
 
-  // Update FiatGateway treasury (handles revoke/grant of TREASURY_ROLE internally per your contract)
+
   console.log(`Rotating FiatGateway treasury to ${opts["new-treasury"]}`);
   await (await gateway.connect(adminSigner).setTreasury(opts["new-treasury"])).wait();
 
-  // If your token implements a TREASURY_ROLE, update there as well:
+
   try {
     const token = await ethers.getContractAt("EnergyToken", A.EnergyToken);
     if (token.TREASURY_ROLE) {
       const TREASURY_ROLE = await token.TREASURY_ROLE();
-      // Attempt to revoke/grant (requires DEFAULT_ADMIN_ROLE on token)
-      // For safety, we only grant to new treasury; revocation from old can be manual if needed.
+
+
       const hasNew = await token.hasRole(TREASURY_ROLE, opts["new-treasury"]);
       if (!hasNew) {
         await (await token.connect(adminSigner).grantRole(TREASURY_ROLE, opts["new-treasury"])).wait();
@@ -182,10 +182,10 @@ async function rotateTreasury(addrs, opts) {
       }
     }
   } catch {
-    // optional best-effort
+
   }
 
-  // Update deployments record (optional)
+
   const file = path.join(__dirname, "..", "deploy", "deployments", `${network.name}.json`);
   const json = JSON.parse(fs.readFileSync(file, "utf8"));
   json.roles = json.roles || {};

@@ -15,7 +15,7 @@ async function checkInstitutes() {
       console.log(`${idx + 1}. ${inst}`);
     });
 
-    // Check sample data for each institute
+
     console.log('\nSample data for each institute:');
     for (const institute of institutes) {
       const count = await CarbonBiometric.countDocuments({ institute });

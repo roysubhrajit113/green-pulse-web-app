@@ -43,14 +43,14 @@ import {
   MdCheckCircle,
 } from "react-icons/md";
 
-// Import contexts
+
 import { useAuth } from "contexts/AuthContext";
 import { useCarbon } from "contexts/CarbonContext";
 import walletService from "services/walletService";
 
-// Energy Pack Card Component
+
 const EnergyPackCard = ({ energyPack, onUpgrade, onCharge, loading }) => {
-  // ✅ ALL HOOKS AT TOP LEVEL
+
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("navy.700", "white");
@@ -205,9 +205,9 @@ const EnergyPackCard = ({ energyPack, onUpgrade, onCharge, loading }) => {
   );
 };
 
-// Current Loan Card Component
+
 const CurrentLoanCard = ({ loan, onPayment, onRefinance, loading }) => {
-  // ✅ ALL HOOKS AT TOP LEVEL
+
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("navy.700", "white");
@@ -349,12 +349,12 @@ const CurrentLoanCard = ({ loan, onPayment, onRefinance, loading }) => {
   );
 };
 
-// Payment Modal Component
+
 const PaymentModal = ({ isOpen, onClose, loan, onConfirmPayment, loading }) => {
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentType, setPaymentType] = useState('regular');
   
-  // ✅ ALL HOOKS AT TOP LEVEL
+
   const textColor = useColorModeValue("navy.700", "white");
 
   const handlePayment = () => {
@@ -421,12 +421,12 @@ const PaymentModal = ({ isOpen, onClose, loan, onConfirmPayment, loading }) => {
   );
 };
 
-// Energy Pack Modal Component
+
 const EnergyPackModal = ({ isOpen, onClose, onConfirmPurchase, loading }) => {
   const [selectedPack, setSelectedPack] = useState('standard');
   const [customCapacity, setCustomCapacity] = useState('');
   
-  // ✅ ALL HOOKS AT TOP LEVEL
+
   const textColor = useColorModeValue("navy.700", "white");
 
   const energyPacks = {
@@ -527,9 +527,9 @@ const EnergyPackModal = ({ isOpen, onClose, onConfirmPurchase, loading }) => {
   );
 };
 
-// Main Wallet Component
+
 export default function Wallet() {
-  // ✅ ALL HOOKS AT TOP LEVEL - MOVED FROM JSX
+
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const textColor = useColorModeValue("navy.700", "white");
@@ -558,7 +558,7 @@ export default function Wallet() {
     onClose: onEnergyPackClose 
   } = useDisclosure();
 
-  // Load wallet data
+
   const loadWalletData = async () => {
     try {
       const data = await walletService.getWalletData();
@@ -583,7 +583,7 @@ export default function Wallet() {
     }
   }, [user]);
 
-  // ✅ UPDATED: Handle energy pack charge with database integration
+
   const handleCharge = async () => {
     setLoading(true);
     try {
@@ -597,7 +597,7 @@ export default function Wallet() {
       });
       
       if (result.success) {
-        await loadWalletData(); // Refresh data
+        await loadWalletData();
         
         toast({
           title: "Charging Started",
@@ -620,14 +620,14 @@ export default function Wallet() {
     }
   };
 
-  // ✅ UPDATED: Handle energy pack purchase with database integration
+
   const handleEnergyPackPurchase = async (packData) => {
     setLoading(true);
     try {
       const result = await walletService.purchaseEnergyPack(packData);
       
       if (result.success) {
-        await loadWalletData(); // Refresh data
+        await loadWalletData();
         onEnergyPackClose();
         
         toast({
@@ -651,14 +651,14 @@ export default function Wallet() {
     }
   };
 
-  // ✅ UPDATED: Handle loan payment with database integration
+
   const handleLoanPayment = async (paymentData) => {
     setLoading(true);
     try {
       const result = await walletService.makeLoanPayment(paymentData);
       
       if (result.success) {
-        await loadWalletData(); // Refresh data
+        await loadWalletData();
         onPaymentClose();
         
         toast({
@@ -682,7 +682,7 @@ export default function Wallet() {
     }
   };
 
-  // ✅ UPDATED: Handle loan application with database integration
+
   const handleLoanApplication = async () => {
     setLoading(true);
     try {
@@ -693,7 +693,7 @@ export default function Wallet() {
       });
       
       if (result.success) {
-        await loadWalletData(); // Refresh data
+        await loadWalletData();
         
         toast({
           title: "Loan Application Approved",
@@ -731,7 +731,7 @@ export default function Wallet() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
-      {/* Energy Pack Card */}
+      {}
       <EnergyPackCard 
         energyPack={walletData.energyPack}
         onUpgrade={onEnergyPackOpen}
@@ -739,7 +739,7 @@ export default function Wallet() {
         loading={loading}
       />
       
-      {/* Current Loan Card */}
+      {}
       <CurrentLoanCard 
         loan={walletData.loan}
         onPayment={onPaymentOpen}
@@ -747,7 +747,7 @@ export default function Wallet() {
         loading={loading}
       />
       
-      {/* Quick Actions Card */}
+      {}
       <Card bg={cardBg} borderColor={borderColor} p="30px">
         <CardHeader>
           <Heading size="lg" color={textColor}>
@@ -795,7 +795,7 @@ export default function Wallet() {
         </CardBody>
       </Card>
 
-      {/* Modals */}
+      {}
       <PaymentModal
         isOpen={isPaymentOpen}
         onClose={onPaymentClose}

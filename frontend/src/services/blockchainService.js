@@ -1,11 +1,11 @@
-// Transaction Service for GreenPulse Carbon Transactions
+
 
 class BlockchainService {
   constructor() {
     this.apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   }
 
-  // Get transaction history from backend
+
   async getTransactionHistory(instituteId, limit = 50, offset = 0) {
     try {
       console.log(`Fetching transaction history for: ${instituteId}`);
@@ -46,7 +46,7 @@ class BlockchainService {
     }
   }
   
-  // Get ENTO transactions from backend
+
   async getEntoTransactions(instituteId, limit = 50, offset = 0) {
     try {
       console.log(`Fetching ENTO transactions for: ${instituteId}`);
@@ -87,7 +87,7 @@ class BlockchainService {
     }
   }
 
-  // Submit transaction to database (renamed from submitCarbonTransaction)
+
   async submitTransaction(transactionData) {
     try {
       const token = localStorage.getItem('token');
@@ -124,7 +124,7 @@ class BlockchainService {
     }
   }
 
-  // Get carbon credit balance for institute
+
   async getCarbonCreditBalance(instituteId) {
     try {
       const token = localStorage.getItem('token');
@@ -158,7 +158,7 @@ class BlockchainService {
   }
 }
 
-// Create singleton instance
+
 const blockchainService = new BlockchainService();
 
 export default blockchainService;

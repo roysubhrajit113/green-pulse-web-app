@@ -1,4 +1,4 @@
-/* Full-screen overlay with game-like dark background */
+
 .loading-screen {
     position: fixed;
     top: 0;
@@ -15,7 +15,7 @@
     animation: fadeIn 0.3s ease-out forwards;
   }
   
-  /* Centered content wrapper */
+  
   .loading-content {
     display: flex;
     flex-direction: column;
@@ -25,7 +25,7 @@
     pointer-events: none;
   }
   
-  /* Special container for PacmanLoader without border */
+  
   .pacman-container {
     position: relative;
     display: flex;
@@ -33,7 +33,7 @@
     align-items: center;
   }
   
-  /* Game-style loading title */
+  
   .loading-title {
     margin-top: 20px;
     font-size: 28px;
@@ -47,13 +47,13 @@
     animation: pulse 1.5s ease-in-out infinite;
   }
   
-  /* Pulsing animation for title */
+  
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
   }
   
-  /* Progress bar section */
+  
   .progress-container {
     width: 100%;
     max-width: 320px;
@@ -82,7 +82,7 @@
     animation: shimmer 2s ease-in-out infinite;
   }
   
-  /* Shimmer effect on progress bar */
+  
   @keyframes shimmer {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.8; }
@@ -96,12 +96,12 @@
     text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
   }
   
-  /* Fade-out animation when hiding */
+  
   .loading-screen.fade-out {
     animation: fadeOut 0.5s ease-in forwards;
   }
   
-  /* Entry and exit animations */
+  
   @keyframes fadeIn {
     from { 
       opacity: 0;
@@ -124,7 +124,7 @@
     }
   }
   
-  /* Add some dots trailing behind PacMan */
+  
   .pacman-container::before {
     content: '';
     position: absolute;
@@ -148,7 +148,7 @@
     50% { opacity: 0.3; }
   }
   
-  /* Responsive design */
+  
   @media (max-width: 600px) {
     .loading-title { 
       font-size: 22px;
@@ -172,7 +172,7 @@
     }
   }
   
-  /* Extra small screens */
+  
   @media (max-width: 400px) {
     .loading-title {
       font-size: 18px;

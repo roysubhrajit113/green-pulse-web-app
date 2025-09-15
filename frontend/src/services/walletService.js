@@ -6,7 +6,7 @@ class WalletService {
     this.walletEndpoint = `${this.baseUrl}/wallet`;
   }
 
-  // Get auth headers
+
   getAuthHeaders() {
     const token = localStorage.getItem('authToken');
     return {
@@ -15,7 +15,7 @@ class WalletService {
     };
   }
 
-  // Get wallet data including energy pack and loan info
+
   async getWalletData() {
     try {
       console.log('🔍 Fetching wallet data...');
@@ -39,7 +39,7 @@ class WalletService {
     }
   }
 
-  // ✅ Purchase energy pack with database storage
+
   async purchaseEnergyPack(packData) {
     try {
       console.log('🔍 Purchasing energy pack:', packData);
@@ -65,7 +65,7 @@ class WalletService {
     }
   }
 
-  // ✅ Make loan payment with database storage
+
   async makeLoanPayment(paymentData) {
     try {
       console.log('🔍 Making loan payment:', paymentData);
@@ -91,7 +91,7 @@ class WalletService {
     }
   }
 
-  // ✅ Apply for loan with database storage
+
   async applyForLoan(loanData = {}) {
     try {
       console.log('🔍 Applying for loan:', loanData);
@@ -117,7 +117,7 @@ class WalletService {
     }
   }
 
-  // ✅ Charge energy pack with database storage
+
   async chargeEnergyPack(chargeData) {
     try {
       console.log('🔍 Charging energy pack:', chargeData);
@@ -143,7 +143,7 @@ class WalletService {
     }
   }
 
-  // Fallback data for testing
+
   getFallbackData() {
     return {
       energyPack: null,

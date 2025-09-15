@@ -24,7 +24,7 @@ const meterDataSchema = new mongoose.Schema({
   collection: 'meter_data'
 });
 
-// Compound indexes for efficient queries
+
 meterDataSchema.index({ building_id: 1, timestamp: -1 });
 meterDataSchema.index({ timestamp: -1 });
 

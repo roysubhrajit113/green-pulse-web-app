@@ -8,7 +8,7 @@ async function checkAllInstitutes() {
     console.log('Connected to MongoDB');
     const db = mongoose.connection.db;
 
-    // Check institutes collection
+
     console.log('\n=== INSTITUTES COLLECTION ===');
     try {
       const institutesCollection = db.collection('institutes');
@@ -21,7 +21,7 @@ async function checkAllInstitutes() {
       console.log('Error accessing institutes collection:', error.message);
     }
 
-    // Check users collection for institutes
+
     console.log('\n=== USERS COLLECTION - INSTITUTES ===');
     try {
       const usersCollection = db.collection('users');
@@ -34,7 +34,7 @@ async function checkAllInstitutes() {
       console.log('Error accessing users collection:', error.message);
     }
 
-    // Check carbonbiometrics collection
+
     console.log('\n=== CARBONBIOMETRICS COLLECTION ===');
     try {
       const carbonbiometricsCollection = db.collection('carbonbiometrics');
@@ -47,7 +47,7 @@ async function checkAllInstitutes() {
       console.log('Error accessing carbonbiometrics collection:', error.message);
     }
 
-    // Check carbondatas collection
+
     console.log('\n=== CARBONDATAS COLLECTION ===');
     try {
       const carbondatasCollection = db.collection('carbondatas');
@@ -60,7 +60,7 @@ async function checkAllInstitutes() {
       console.log('Error accessing carbondatas collection:', error.message);
     }
 
-    // Check energy collection
+
     console.log('\n=== ENERGY COLLECTION ===');
     try {
       const energyCollection = db.collection('energy');

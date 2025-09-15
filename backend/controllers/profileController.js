@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-// Get user profile
+
 const getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password');
@@ -17,7 +17,7 @@ const getProfile = async (req, res) => {
   }
 };
 
-// Update user profile
+
 const updateProfile = async (req, res) => {
   try {
     const {
@@ -39,7 +39,7 @@ const updateProfile = async (req, res) => {
       });
     }
 
-    // Update fields if provided
+
     if (designation) user.designation = designation;
     if (department) user.department = department;
     if (branch) user.branch = branch;
@@ -50,7 +50,7 @@ const updateProfile = async (req, res) => {
 
     await user.save();
 
-    // Return updated user without password
+
     const updatedUser = await User.findById(user._id).select('-password');
 
     res.status(200).json({

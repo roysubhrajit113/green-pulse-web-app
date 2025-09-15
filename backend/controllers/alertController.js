@@ -4,12 +4,10 @@ const MeterData = require('../models/MeterData');
 const Alert = require('../models/Alert');
 const User = require('../models/User');
 
-// Default threshold value (can be made configurable per user later)
-const DEFAULT_THRESHOLD = 1000; // Adjust this value based on your requirements
 
-/**
- * Generate alerts for a specific user based on their institute
- */
+const DEFAULT_THRESHOLD = 1000;
+
+
 const generateAlertsForUser = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -22,7 +20,7 @@ const generateAlertsForUser = async (req, res) => {
       });
     }
 
-    // Get the institute name from user
+
     const userInstitute = typeof user.institute === 'string' 
       ? user.institute 
       : user.institute.name || user.institute.label;
@@ -34,10 +32,10 @@ const generateAlertsForUser = async (req, res) => {
       });
     }
 
-    // Get custom threshold from request or use default
+
     const threshold = req.body.threshold || DEFAULT_THRESHOLD;
 
-    // Find all buildings for the user's institute
+
     const buildings = await Building.find({ institute: userInstitute });
     
     if (buildings.length === 0) {
@@ -50,15 +48,15 @@ const generateAlertsForUser = async (req, res) => {
     const buildingIds = buildings.map(building => building.building_id);
     const alerts = [];
 
-    // Check each building for meter readings above threshold
+
     for (const building of buildings) {
-      // Get the latest meter reading for this building
+
       const latestMeterData = await MeterData.findOne(
         { building_id: building.building_id }
       ).sort({ timestamp: -1 });
 
       if (latestMeterData && latestMeterData.meter_reading > threshold) {
-        // Check if alert already exists for this building
+
         const existingAlert = await Alert.findOne({
           user_id: userId,
           building_id: building.building_id,
@@ -66,7 +64,7 @@ const generateAlertsForUser = async (req, res) => {
         });
 
         if (!existingAlert) {
-          // Determine severity based on how much the reading exceeds threshold
+
           let severity = 'medium';
           const exceedanceRatio = latestMeterData.meter_reading / threshold;
           
@@ -75,7 +73,7 @@ const generateAlertsForUser = async (req, res) => {
           else if (exceedanceRatio > 1.5) severity = 'medium';
           else severity = 'low';
 
-          // Create new alert
+
           const newAlert = new Alert({
             user_id: userId,
             building_id: building.building_id,
@@ -115,9 +113,7 @@ const generateAlertsForUser = async (req, res) => {
   }
 };
 
-/**
- * Get all active alerts for the current user
- */
+
 const getUserAlerts = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -162,9 +158,7 @@ const getUserAlerts = async (req, res) => {
   }
 };
 
-/**
- * Acknowledge an alert
- */
+
 const acknowledgeAlert = async (req, res) => {
   try {
     const alertId = req.params.id;
@@ -205,9 +199,7 @@ const acknowledgeAlert = async (req, res) => {
   }
 };
 
-/**
- * Resolve an alert
- */
+
 const resolveAlert = async (req, res) => {
   try {
     const alertId = req.params.id;
@@ -248,9 +240,7 @@ const resolveAlert = async (req, res) => {
   }
 };
 
-/**
- * Get alert summary/statistics for dashboard
- */
+
 const getAlertSummary = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -275,7 +265,7 @@ const getAlertSummary = async (req, res) => {
       }
     ]);
 
-    // Format the results
+
     const statusCounts = {};
     summary.forEach(item => {
       statusCounts[item._id] = item.count;

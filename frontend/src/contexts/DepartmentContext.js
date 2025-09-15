@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useInstitute } from './InstituteContext'; // Import institute context
+import { useInstitute } from './InstituteContext';
 
 const DepartmentContext = createContext();
 
 export const useDepartment = () => {
   const context = useContext(DepartmentContext);
   if (!context) {
-    // Return fallback data instead of throwing error
+
     return {
       departments: [],
       loading: false,
@@ -35,9 +35,9 @@ export const useDepartment = () => {
   return context;
 };
 
-// API service functions for departments
+
 const departmentAPI = {
-  // Fetch buildings for specific institute
+
   async fetchBuildingsByInstitute(instituteName) {
     try {
       console.log('Fetching buildings for institute:', instituteName);
@@ -62,7 +62,7 @@ const departmentAPI = {
     }
   },
 
-  // Fetch meter data for specific building IDs
+
   async fetchMeterDataForBuildings(buildingIds) {
     try {
       console.log('Fetching meter data for buildings:', buildingIds);
@@ -88,7 +88,7 @@ const departmentAPI = {
     }
   },
 
-  // Fetch latest meter readings for buildings
+
   async fetchLatestMeterReadings(buildingIds) {
     try {
       const response = await fetch(`http://localhost:5000/api/meter-data/latest`, {
@@ -113,19 +113,19 @@ const departmentAPI = {
 };
 
 export const DepartmentProvider = ({ children }) => {
-  const { currentInstitute } = useInstitute(); // Get current institute
+  const { currentInstitute } = useInstitute();
   const [departments, setDepartments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Predefined department colors and additional info
+
   const departmentColors = [
     '#4318FF', '#6AD2FF', '#4CAF50', '#FF9800', '#9C27B0',
     '#F44336', '#00BCD4', '#795548', '#607D8B', '#FF6B6B',
     '#2196F3', '#8BC34A', '#FFC107', '#E91E63', '#009688'
   ];
 
-  // Indian names for department heads
+
   const indianHeads = [
     'Dr. Rajesh Kumar', 'Prof. Priya Sharma', 'Dr. Arjun Patel', 'Prof. Meera Singh',
     'Dr. Vikram Gupta', 'Prof. Kavita Reddy', 'Dr. Anil Verma', 'Prof. Sunita Joshi',
@@ -134,11 +134,11 @@ export const DepartmentProvider = ({ children }) => {
     'Dr. Suresh Kumar', 'Prof. Anjali Sharma', 'Dr. Ramesh Singh', 'Prof. Divya Patel'
   ];
 
-  // Calculate energy consumption from meter readings (sum of last 24 hours)
+
   const calculateConsumption = (meterReadings) => {
     if (!meterReadings || meterReadings.length === 0) return 0;
     
-    // Get readings from last 24 hours and sum them
+
     const last24Hours = new Date();
     last24Hours.setHours(last24Hours.getHours() - 24);
     
@@ -150,19 +150,19 @@ export const DepartmentProvider = ({ children }) => {
     return recentReadings.reduce((sum, reading) => sum + (reading.meter_reading || 0), 0);
   };
 
-  // Calculate efficiency percentage based on consumption vs estimated capacity
+
   const calculateEfficiency = (currentConsumption, capacity, squareFeet) => {
     if (!capacity || capacity === 0) {
-      // Estimate capacity based on building size if not provided
-      const estimatedCapacity = squareFeet * 0.05; // 0.05 kWh per sq ft per day
+
+      const estimatedCapacity = squareFeet * 0.05;
       return currentConsumption > 0 ? Math.min(Math.round((estimatedCapacity / currentConsumption) * 100), 100) : 100;
     }
     return currentConsumption > 0 ? Math.min(Math.round((capacity / currentConsumption) * 100), 100) : 100;
   };
 
-  // Generate student and faculty counts based on building type and size
+
   const generateCounts = (primaryUse, squareFeet) => {
-    const baseMultiplier = squareFeet / 10000; // Base on building size
+    const baseMultiplier = squareFeet / 10000;
     
     switch (primaryUse.toLowerCase()) {
       case 'education':
@@ -206,12 +206,12 @@ export const DepartmentProvider = ({ children }) => {
     }
   };
 
-  // Convert buildings to departments with real data
+
   const convertBuildingsToDepartments = (buildings, meterData) => {
     return buildings.map((building, index) => {
       const buildingMeterData = meterData.filter(data => data.building_id === building.building_id);
       const currentConsumption = calculateConsumption(buildingMeterData);
-      const estimatedCapacity = building.square_feet * 0.06; // Estimate capacity
+      const estimatedCapacity = building.square_feet * 0.06;
       const efficiency = calculateEfficiency(currentConsumption, estimatedCapacity, building.square_feet);
       const { studentCount, facultyCount } = generateCounts(building.primary_use, building.square_feet);
 
@@ -222,7 +222,7 @@ export const DepartmentProvider = ({ children }) => {
         building: building.assigned_name,
         building_id: building.building_id,
         primary_use: building.primary_use,
-        floorCount: Math.max(1, Math.ceil(building.square_feet / 20000)), // Estimate floors
+        floorCount: Math.max(1, Math.ceil(building.square_feet / 20000)),
         square_feet: building.square_feet,
         year_built: building.year_built,
         energyCapacity: Math.round(estimatedCapacity),
@@ -241,7 +241,7 @@ export const DepartmentProvider = ({ children }) => {
     });
   };
 
-  // Load departments data from database based on current institute
+
   useEffect(() => {
     const loadDepartments = async () => {
       if (!currentInstitute) {
@@ -256,7 +256,7 @@ export const DepartmentProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         
-        // Fetch buildings for current institute
+
         const buildingsResponse = await departmentAPI.fetchBuildingsByInstitute(currentInstitute.name);
         const buildings = buildingsResponse.buildings || buildingsResponse.data || buildingsResponse || [];
 
@@ -269,14 +269,14 @@ export const DepartmentProvider = ({ children }) => {
 
         console.log(`Found ${buildings.length} buildings for ${currentInstitute.name}`);
 
-        // Get building IDs
+
         const buildingIds = buildings.map(building => building.building_id);
         
-        // Fetch meter data for these buildings
+
         const meterDataResponse = await departmentAPI.fetchMeterDataForBuildings(buildingIds);
         const meterData = meterDataResponse.meterData || meterDataResponse.data || meterDataResponse || [];
 
-        // Convert buildings to departments with real data
+
         const departmentsData = convertBuildingsToDepartments(buildings, meterData);
         setDepartments(departmentsData);
 
@@ -285,7 +285,7 @@ export const DepartmentProvider = ({ children }) => {
       } catch (error) {
         console.error('Error loading departments:', error);
         setError(error.message);
-        // Set empty departments on error
+
         setDepartments([]);
       } finally {
         setLoading(false);
@@ -293,24 +293,24 @@ export const DepartmentProvider = ({ children }) => {
     };
 
     loadDepartments();
-  }, [currentInstitute]); // Reload when institute changes
+  }, [currentInstitute]);
 
-  // Get department by ID
+
   const getDepartmentById = (departmentId) => {
     return departments.find(dept => dept.id === departmentId);
   };
 
-  // Get department by building ID
+
   const getDepartmentByBuildingId = (buildingId) => {
     return departments.find(dept => dept.building_id === buildingId);
   };
 
-  // Get department by code
+
   const getDepartmentByCode = (code) => {
     return departments.find(dept => dept.code === code);
   };
 
-  // Get department statistics
+
   const getDepartmentStats = () => {
     const totalDepartments = departments.length;
     const totalStudents = departments.reduce((sum, dept) => sum + dept.studentCount, 0);
@@ -334,7 +334,7 @@ export const DepartmentProvider = ({ children }) => {
     };
   };
 
-  // Get energy consumption by department
+
   const getEnergyConsumptionByDepartment = () => {
     return departments.map(dept => ({
       name: dept.name,
@@ -347,7 +347,7 @@ export const DepartmentProvider = ({ children }) => {
     }));
   };
 
-  // Update department energy consumption (for real-time updates)
+
   const updateDepartmentConsumption = async (departmentId, newConsumption) => {
     setDepartments(prevDepartments =>
       prevDepartments.map(dept =>
@@ -362,28 +362,28 @@ export const DepartmentProvider = ({ children }) => {
     );
   };
 
-  // Get top energy consuming departments
+
   const getTopEnergyConsumers = (limit = 5) => {
     return departments
       .sort((a, b) => b.currentConsumption - a.currentConsumption)
       .slice(0, limit);
   };
 
-  // Get most efficient departments
+
   const getMostEfficientDepartments = (limit = 5) => {
     return departments
       .sort((a, b) => b.efficiency - a.efficiency)
       .slice(0, limit);
   };
 
-  // Get departments by primary use
+
   const getDepartmentsByPrimaryUse = (primaryUse) => {
     return departments.filter(dept => 
       dept.primary_use.toLowerCase().includes(primaryUse.toLowerCase())
     );
   };
 
-  // Refresh departments data
+
   const refreshDepartments = async () => {
     if (!currentInstitute) return;
     

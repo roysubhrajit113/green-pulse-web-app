@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const MeterData = require('../models/MeterData'); // Adjust path as needed
+const MeterData = require('../models/MeterData');
 
-// POST /api/meter-data
-// Get meter data for multiple building IDs
+
+
 router.post('/', async (req, res) => {
   try {
     const { building_ids } = req.body;
@@ -17,10 +17,10 @@ router.post('/', async (req, res) => {
 
     console.log('Fetching meter data for buildings:', building_ids);
 
-    // Find meter data for all specified building IDs, sorted by timestamp
+
     const meterData = await MeterData.find({
       building_id: { $in: building_ids }
-    }).sort({ timestamp: 1 }); // Sort ascending by timestamp
+    }).sort({ timestamp: 1 });
 
     console.log(`Found ${meterData.length} meter readings`);
 
@@ -40,8 +40,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// POST /api/meter-data/latest
-// Get latest meter readings for each building
+
+
 router.post('/latest', async (req, res) => {
   try {
     const { building_ids } = req.body;
@@ -55,22 +55,22 @@ router.post('/latest', async (req, res) => {
 
     console.log('Fetching latest meter readings for buildings:', building_ids);
 
-    // Use MongoDB aggregation to get the latest reading per building
+
     const latestReadings = await MeterData.aggregate([
-      // Match documents for the specified building IDs
+
       { 
         $match: { 
           building_id: { $in: building_ids } 
         } 
       },
-      // Sort by building_id and timestamp (descending for latest)
+
       { 
         $sort: { 
           building_id: 1, 
           timestamp: -1 
         } 
       },
-      // Group by building_id and get the first (latest) document
+
       {
         $group: {
           _id: '$building_id',

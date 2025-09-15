@@ -17,21 +17,21 @@ import illustration from "assets/img/auth/auth.png";
 function ForgotPassword() {
   const navigate = useNavigate();
 
-  // Chakra color mode
+
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = "gray.400";
   const textColorDetails = useColorModeValue("navy.700", "secondaryGray.600");
   const textColorBrand = useColorModeValue("brand.500", "white");
   const brandStars = useColorModeValue("brand.500", "brand.400");
 
-  // Handle password reset
+
   const handlePasswordReset = (event) => {
     event.preventDefault();
-    // Add password reset logic here (API call, validation, etc.)
-    // On successful submission:
+
+
     alert('Password reset link sent to your email!');
-    // Optionally redirect to sign in page
-    // navigate('/auth/sign-in');
+
+
   };
 
   return (
@@ -77,7 +77,7 @@ function ForgotPassword() {
             me="auto"
             mb={{ base: "20px", md: "auto" }}
           >
-            {/* FORM STARTS HERE */}
+            {}
             <form onSubmit={handlePasswordReset}>
               <FormControl>
                 <FormLabel
@@ -114,7 +114,7 @@ function ForgotPassword() {
                 </Button>
               </FormControl>
             </form>
-            {/* FORM ENDS HERE */}
+            {}
             <Flex
               flexDirection="column"
               justifyContent="center"

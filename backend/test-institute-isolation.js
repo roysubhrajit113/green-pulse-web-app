@@ -1,5 +1,5 @@
-// Test script to verify institute isolation and security
-// This script tests that users can only access data from their own institute
+
+
 
 const User = require('./models/User');
 const CarbonData = require('./models/CarbonData');
@@ -11,14 +11,14 @@ async function testInstituteIsolation() {
   try {
     console.log('🧪 Starting Institute Isolation Tests...\n');
 
-    // Connect to database
+
     await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/greenpulse', {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     console.log('✅ Connected to database\n');
 
-    // Test 1: Create test users from different institutes
+
     console.log('📝 Test 1: Creating test users from different institutes');
     
     const testUsers = [
@@ -42,7 +42,7 @@ async function testInstituteIsolation() {
       }
     ];
 
-    // Clean up any existing test users
+
     await User.deleteMany({ 
       email: { $in: testUsers.map(u => u.email) } 
     });
@@ -62,7 +62,7 @@ async function testInstituteIsolation() {
       console.log(`✅ Created user: ${user.fullName} from ${typeof user.institute === 'string' ? user.institute : user.institute.name}`);
     }
 
-    // Test 2: Create carbon data for each institute
+
     console.log('\n📊 Test 2: Creating institute-specific carbon data');
     
     const carbonDataEntries = [];
@@ -95,7 +95,7 @@ async function testInstituteIsolation() {
       console.log(`✅ Created carbon data for ${user.fullName}'s institute`);
     }
 
-    // Test 3: Verify institute filtering works correctly
+
     console.log('\n🔍 Test 3: Testing institute filtering');
     
     for (let i = 0; i < createdUsers.length; i++) {
@@ -107,7 +107,7 @@ async function testInstituteIsolation() {
       console.log(`   Institute: ${JSON.stringify(userInstitute)}`);
       console.log(`   Filter: ${JSON.stringify(instituteFilter)}`);
       
-      // Should find their own data
+
       const ownData = await CarbonData.find({
         userId: user._id,
         ...instituteFilter
@@ -115,7 +115,7 @@ async function testInstituteIsolation() {
       
       console.log(`   ✅ Can access own data: ${ownData.length} record(s) found`);
       
-      // Should not find other institutes' data
+
       const otherUsersData = await CarbonData.find({
         userId: { $ne: user._id },
         ...instituteFilter
@@ -127,7 +127,7 @@ async function testInstituteIsolation() {
         console.log(`   ⚠️  WARNING: User can access data from other users in same institute!`);
       }
       
-      // Test cross-institute access (should be 0)
+
       const allOtherData = await CarbonData.find({
         userId: { $ne: user._id }
       });
@@ -139,7 +139,7 @@ async function testInstituteIsolation() {
       console.log(`   🚫 Cross-institute data blocked: ${crossInstituteData.length} record(s) inaccessible (Good!)`);
     }
 
-    // Test 4: Test institute identifier consistency
+
     console.log('\n🏫 Test 4: Testing institute identifier consistency');
     
     const testInstitutes = [
@@ -156,7 +156,7 @@ async function testInstituteIsolation() {
       console.log(`   Institute: ${JSON.stringify(institute)} → Identifier: "${identifier}"`);
     }
 
-    // Test 5: Aggregation test (institute-specific analytics)
+
     console.log('\n📈 Test 5: Testing institute-specific aggregation');
     
     for (const user of createdUsers) {
@@ -187,7 +187,7 @@ async function testInstituteIsolation() {
     console.log('   ✅ Institute identifiers are consistent');
     console.log('   ✅ Aggregation queries are institute-filtered');
 
-    // Clean up test data
+
     console.log('\n🧹 Cleaning up test data...');
     await User.deleteMany({ 
       email: { $in: testUsers.map(u => u.email) } 
@@ -205,7 +205,7 @@ async function testInstituteIsolation() {
   }
 }
 
-// Run tests if this script is executed directly
+
 if (require.main === module) {
   testInstituteIsolation().then(() => {
     console.log('\n🏁 Test execution complete!');

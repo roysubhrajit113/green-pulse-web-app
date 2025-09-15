@@ -1,6 +1,6 @@
 import React from "react";
 
-// Chakra imports
+
 import {
   Menu,
   MenuButton,
@@ -12,7 +12,7 @@ import {
   Icon,
   Text,
 } from "@chakra-ui/react";
-// Assets
+
 import {
   MdOutlinePerson,
   MdOutlineCardTravel,
@@ -22,14 +22,14 @@ import {
 export default function Banner(props) {
   const { icon, ...rest } = props;
 
-  // Ellipsis modals
+
   const {
     isOpen: isOpen1,
     onOpen: onOpen1,
     onClose: onClose1,
   } = useDisclosure();
 
-  // Chakra color mode
+
 
   const textColor = useColorModeValue("secondaryGray.500", "white");
   const textHover = useColorModeValue(

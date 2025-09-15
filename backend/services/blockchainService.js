@@ -12,19 +12,19 @@ class BlockchainService {
 
   async initialize() {
     try {
-      // Connect to the blockchain (local Hardhat node by default)
+
       this.provider = new ethers.JsonRpcProvider(process.env.BLOCKCHAIN_RPC_URL || 'http://127.0.0.1:8545');
       
-      // Load contract addresses from deployment file
+
       const deploymentsPath = path.join(__dirname, '../../deploy/deployments/localhost.json');
       if (fs.existsSync(deploymentsPath)) {
         const deploymentData = JSON.parse(fs.readFileSync(deploymentsPath, 'utf8'));
         this.contractAddresses = deploymentData.addresses || {};
         
-        // Load contract ABIs from artifacts
+
         const artifactsPath = path.join(__dirname, '../../artifacts/contracts');
         
-        // Initialize EnergyToken contract
+
         if (this.contractAddresses.EnergyToken) {
           const tokenArtifact = require(path.join(artifactsPath, 'EnergyToken.sol/EnergyToken.json'));
           this.contracts.token = new ethers.Contract(
@@ -34,7 +34,7 @@ class BlockchainService {
           );
         }
         
-        // Initialize other contracts as needed
+
         console.log('Blockchain service initialized with contracts:', Object.keys(this.contracts));
       } else {
         console.error('Deployment file not found. Run deployment script first.');
@@ -44,23 +44,23 @@ class BlockchainService {
     }
   }
 
-  // Store blockchain transaction in MongoDB
+
   async storeTransaction(transaction) {
     try {
       const { userId, institute, type, amount, description, building, consumption, blockchainTxHash } = transaction;
       
-      // Find user's carbon data record
+
       let carbonData = await CarbonData.findOne({ userId, institute });
       
       if (!carbonData) {
-        // Create new carbon data record if not exists
+
         carbonData = new CarbonData({
           userId,
           institute,
         });
       }
       
-      // Add transaction to the record
+
       carbonData.transactions.push({
         type,
         amount,
@@ -71,11 +71,11 @@ class BlockchainService {
         date: new Date()
       });
       
-      // Update other relevant fields based on transaction type
+
       if (type === 'energy_consumption') {
         carbonData.currentEnergyConsumption += consumption || 0;
         
-        // Update building data if specified
+
         if (building) {
           const buildingIndex = carbonData.buildingData.findIndex(b => b.buildingName === building);
           if (buildingIndex >= 0) {
@@ -85,7 +85,7 @@ class BlockchainService {
         }
       }
       
-      // Save the updated record
+
       await carbonData.save();
       
       return {
@@ -101,10 +101,10 @@ class BlockchainService {
     }
   }
 
-  // Get blockchain transaction by hash
+
   async getTransactionByHash(txHash) {
     try {
-      // Query the blockchain for transaction details
+
       const txReceipt = await this.provider.getTransactionReceipt(txHash);
       
       if (!txReceipt) {
@@ -114,7 +114,7 @@ class BlockchainService {
         };
       }
       
-      // Find the transaction in MongoDB
+
       const carbonData = await CarbonData.findOne({
         'transactions.blockchainTxHash': txHash
       });

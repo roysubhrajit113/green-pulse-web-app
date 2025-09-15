@@ -1,22 +1,22 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-// Helper to deploy the full stack needed by Auction tests
+
 async function deployFixture() {
   const [deployer, admin, treasury, oracleCommittee, deptA, deptB] = await ethers.getSigners();
 
-  const GENESIS_SUPPLY = ethers.parseUnits("100000", 18); // 100,000 EnTo
+  const GENESIS_SUPPLY = ethers.parseUnits("100000", 18);
 
-  // EnergyToken
+
   const Token = await ethers.getContractFactory("EnergyToken");
   const token = await Token.deploy(
     admin.address,
     treasury.address,
-    0 // maxSupply = 0 means no cap
+    0
   );
   await token.waitForDeployment();
 
-  // EnergyAuction(token, genesisSupply, admin, oracleCommittee)
+
   const Auction = await ethers.getContractFactory("EnergyAuction");
   const auction = await Auction.deploy(
     await token.getAddress(),
@@ -26,14 +26,14 @@ async function deployFixture() {
   );
   await auction.waitForDeployment();
 
-  // Transfer some tokens from treasury to admin for testing
+
   const treasuryBalance = await token.balanceOf(treasury.address);
   if (treasuryBalance > 0n) {
-    const transferAmount = treasuryBalance / 2n; // Transfer half to admin
+    const transferAmount = treasuryBalance / 2n;
     await (await token.connect(treasury).transfer(admin.address, transferAmount)).wait();
   }
 
-  // EnergyOracle(token, auction, genesisSupply, admin) - for completeness if Auction references Oracle in events
+
   const Oracle = await ethers.getContractFactory("EnergyOracle");
   const oracle = await Oracle.deploy(
     await token.getAddress(),
@@ -43,7 +43,7 @@ async function deployFixture() {
   );
   await oracle.waitForDeployment();
 
-  // If your system expects Oracle to have mint/burn on token (not strictly needed for Auction tests)
+
   if (token.MINTER_ROLE && token.BURNER_ROLE) {
     const MINTER_ROLE = await token.MINTER_ROLE();
     const BURNER_ROLE = await token.BURNER_ROLE();
@@ -58,7 +58,7 @@ async function deployFixture() {
   };
 }
 
-// Compute EnTo needed at current unit price: EnTo = kWh * 1e18 / unitPrice18
+
 function enToForKwh(kWh, unitPrice18) {
   return (kWh * 10n ** 18n) / unitPrice18;
 }
@@ -84,7 +84,7 @@ describe("EnergyAuction", () => {
     const unitPrice18 = await auction.previewCurrentUnitPrice18();
     const enToRequired = enToForKwh(kWh, unitPrice18);
 
-    // Fund deptA and approve auction
+
     await (await token.connect(admin).transfer(deptA.address, enToRequired)).wait();
     await (await token.connect(deptA).approve(await auction.getAddress(), enToRequired)).wait();
 
@@ -109,9 +109,9 @@ describe("EnergyAuction", () => {
     const unitPrice18 = await auction.previewCurrentUnitPrice18();
     const enToRequired = enToForKwh(kWh, unitPrice18);
 
-    // No funding/approval given to deptA → expect revert on transferFrom
+
     await expect(auction.connect(deptA).buyPack(month, kWh)).to.be.reverted;
-    // Now fund but don't approve
+
     await (await token.transfer(deptA.address, enToRequired)).wait();
     await expect(auction.connect(deptA).buyPack(month, kWh)).to.be.reverted;
   });
@@ -123,7 +123,7 @@ describe("EnergyAuction", () => {
 
     const m = 202508;
 
-    // First buyer
+
     let unitPrice18 = await auction.previewCurrentUnitPrice18();
     let k1 = 1_000n;
     let p1EnTo = enToForKwh(k1, unitPrice18);
@@ -131,27 +131,26 @@ describe("EnergyAuction", () => {
     await (await token.connect(deptA).approve(await auction.getAddress(), p1EnTo)).wait();
     await (await auction.connect(deptA).buyPack(m, k1)).wait();
 
-    // Second buyer
-    unitPrice18 = await auction.previewCurrentUnitPrice18(); // price may adjust if your curve depends on totals
+
+    unitPrice18 = await auction.previewCurrentUnitPrice18();
     let k2 = 2_000n;
     let p2EnTo = enToForKwh(k2, unitPrice18);
     await (await token.connect(admin).transfer(deptB.address, p2EnTo)).wait();
     await (await token.connect(deptB).approve(await auction.getAddress(), p2EnTo)).wait();
     await (await auction.connect(deptB).buyPack(m, k2)).wait();
 
-    // Read cumulative stats for month if exposed (common pattern)
-    // For example, auction.getMonthStats(month) returning totalKWh, totalEnTo, avgPrice18
-    // If you don't have such a function, skip or adapt this section.
+
+
     try {
       const stats = await auction.getMonthStats(m);
-      // totalKWh should equal k1+k2
+
       expect(stats.totalKWh).to.eq(k1 + k2);
-      // totalEnTo should be roughly sum of both payments (depends if price changed between buys)
+
       expect(stats.totalEnTo).to.eq(p1EnTo + p2EnTo);
-      // avg price should be within range of observed unit prices
+
       expect(stats.avgUnitPrice18).to.be.greaterThan(0n);
     } catch {
-      // If getMonthStats is not implemented, the test still validated two purchases.
+
     }
   });
 
@@ -168,16 +167,15 @@ describe("EnergyAuction", () => {
     await (await token.connect(admin).transfer(deptA.address, enToRequired * 2n)).wait();
     await (await token.connect(deptA).approve(await auction.getAddress(), enToRequired * 2n)).wait();
 
-    // Enable one-pack-per-month
+
     try {
       await (await auction.connect(admin).setOnePackPerMonth(true)).wait();
     } catch {
-      // If your contract always enforces 1 pack/month or lacks this setter, ignore
     }
 
     await (await auction.connect(deptA).buyPack(m, k)).wait();
 
-    // Second attempt in same month should revert if enforcement is active
+
     const tx = auction.connect(deptA).buyPack(m, k);
     await expect(tx).to.be.reverted;
   });
@@ -190,28 +188,28 @@ describe("EnergyAuction", () => {
     const m = 202508;
     const k = 500n;
 
-    // Disable one-pack-per-month if available
+
     try {
       await (await auction.connect(admin).setOnePackPerMonth(false)).wait();
     } catch {
-      // If the feature doesn't exist and default allows multiple, test still passes
+
     }
 
-    // First buy
+
     let unitPrice18 = await auction.previewCurrentUnitPrice18();
     let costEnTo = enToForKwh(k, unitPrice18);
-    await (await token.connect(admin).transfer(deptA.address, costEnTo * 3n)).wait(); // fund enough for multiple
+    await (await token.connect(admin).transfer(deptA.address, costEnTo * 3n)).wait();
     await (await token.connect(deptA).approve(await auction.getAddress(), costEnTo * 3n)).wait();
     await (await auction.connect(deptA).buyPack(m, k)).wait();
 
-    // Second buy same month (should pass if toggle disabled or default allows)
+
     unitPrice18 = await auction.previewCurrentUnitPrice18();
     costEnTo = enToForKwh(k, unitPrice18);
     await (await auction.connect(deptA).buyPack(m, k)).wait();
 
-    // Verify cumulative purchased kWh for the month for deptA
+
     const pack = await auction.getPack(m, deptA.address);
-    expect(pack.kWhPurchased).to.be.greaterThanOrEqual(1000n); // at least k+k
+    expect(pack.kWhPurchased).to.be.greaterThanOrEqual(1000n);
   });
 
   it("admin can update auction parameters within bounds", async () => {
@@ -219,16 +217,14 @@ describe("EnergyAuction", () => {
     const { auction } = contracts;
     const { admin } = signers;
 
-    // Try updating a reasonable parameter if exposed, e.g., base price bps, slope, or similar
-    // Replace with your actual setters:
     try {
-      // Example: set a synthetic parameter that exists in your contract
-      // await expect(auction.connect(admin).setBaseBps(9000)).to.emit(auction, "AuctionParamUpdated");
-      // For generic coverage, just call a view to ensure contract is alive:
+
+
+
       const p = await auction.previewCurrentUnitPrice18();
       expect(p).to.be.greaterThan(0n);
     } catch {
-      // If you have no public admin params, skip
+    
     }
   });
 
@@ -237,14 +233,12 @@ describe("EnergyAuction", () => {
     const { auction, token } = contracts;
     const { admin, deptA } = signers;
 
-    // If your contract exposes global counters, test them; otherwise skip.
     let startTotalEnTo = 0n;
     let startTotalKwh = 0n;
     try {
       startTotalEnTo = await auction.totalEnToCollected();
       startTotalKwh = await auction.totalKWhSold();
     } catch {
-      // Not exposed in your version, skip baseline
     }
 
     const m = 202509;
@@ -262,7 +256,6 @@ describe("EnergyAuction", () => {
       expect(endTotalEnTo).to.be.greaterThan(startTotalEnTo);
       expect(endTotalKwh).to.be.greaterThan(startTotalKwh);
     } catch {
-      // Not exposed in your version, still fine—the pack test above already validated behavior
     }
   });
 });

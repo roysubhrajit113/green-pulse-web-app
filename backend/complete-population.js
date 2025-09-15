@@ -1,4 +1,4 @@
-// Quick script to complete population for all 14 Indian institutes
+
 require('dotenv').config();
 const mongoose = require('mongoose');
 const CarbonBiometric = require('./models/CarbonBiometric');
@@ -28,23 +28,23 @@ async function completePopulation() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('Connected to MongoDB');
 
-    // Check which institutes already have data
+
     const existingInstitutes = await CarbonBiometric.distinct('institute');
     console.log('Existing institutes:', existingInstitutes);
 
     const missingInstitutes = indianInstitutes.filter(inst => !existingInstitutes.includes(inst));
     console.log('Missing institutes:', missingInstitutes);
 
-    // Create data for missing institutes quickly
+
     for (const institute of missingInstitutes) {
       console.log(`Creating data for ${institute}...`);
       
       const instituteMultiplier = (indianInstitutes.indexOf(institute) + 1) * 0.1 + 1;
       
-      // Create 50 records per institute for quick setup
+
       for (let i = 0; i < 50; i++) {
         const timestamp = new Date();
-        timestamp.setDate(timestamp.getDate() - Math.floor(Math.random() * 180)); // Random last 6 months
+        timestamp.setDate(timestamp.getDate() - Math.floor(Math.random() * 180));
         
         const department = departments[Math.floor(Math.random() * departments.length)];
         
@@ -83,7 +83,7 @@ async function completePopulation() {
       }
     }
 
-    // Verify all institutes now have data
+
     const finalInstitutes = await CarbonBiometric.distinct('institute');
     console.log(`Final institutes count: ${finalInstitutes.length}`);
     console.log('All institutes:', finalInstitutes.sort());
