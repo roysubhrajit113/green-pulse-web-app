@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: green-pulse-mongodb
+    restart: always
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
+    networks:
+      - green-pulse-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: green-pulse-app
+    restart: always
+    depends_on:
+      - mongodb
+    ports:
+      - "5000:5000"  # Backend API
+      - "3000:3000"  # Frontend (if serving from Node)
+      - "5001:5001"  # Chatbot service
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongodb:27017/greenpulse?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    networks:
+      - green-pulse-network
+
+networks:
+  green-pulse-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
