@@ -1,4 +1,3 @@
-
 import {
   Box,
   Card,
@@ -26,6 +25,7 @@ import {
   SimpleGrid,
   Flex,
   Spinner,
+  useToast,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import {
@@ -41,6 +41,9 @@ import {
   MdAttachMoney,
   MdSchedule,
 } from "react-icons/md";
+import { useAuth } from "../../../contexts/AuthContext";
+import { useInstitute } from "../../../contexts/InstituteContext";
+import { useCarbon } from "../../../contexts/CarbonContext"; // ✅ Use your Carbon context
 
 // Blockchain Transaction Component
 const BlockchainTransaction = ({ transaction, index }) => {
@@ -74,6 +77,11 @@ const BlockchainTransaction = ({ transaction, index }) => {
     return 'red.500';
   };
 
+  // ✅ Calculate progress based on status and confirmations
+  const progress = transaction.status === 'verified' ? 100 : 
+                  transaction.status === 'pending' ? 50 : 
+                  transaction.confirmations ? Math.min(100, transaction.confirmations * 10) : 0;
+
   return (
     <Tr _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}>
       <Td>
@@ -86,37 +94,44 @@ const BlockchainTransaction = ({ transaction, index }) => {
           />
           <VStack align="start" spacing="0">
             <Text color={textColor} fontSize="sm" fontWeight="bold">
-              {transaction.name}
+              {transaction.type?.replace('_', ' ').toUpperCase() || 'TRANSACTION'}
             </Text>
             <Text color={textColorSecondary} fontSize="xs">
-              {transaction.type}
+              {transaction.blockchainTxHash ? 
+                transaction.blockchainTxHash.substring(0, 10) + '...' : 
+                `ID: ${transaction._id?.substring(0, 8) || 'N/A'}`}
             </Text>
           </VStack>
         </HStack>
       </Td>
       <Td>
         <Badge
-          colorScheme={getStatusColor(transaction.status)}
+          colorScheme={getStatusColor(transaction.status || 'pending')}
           variant="subtle"
           fontSize="xs"
           textTransform="capitalize"
         >
-          {transaction.status}
+          {transaction.status || 'pending'}
         </Badge>
       </Td>
       <Td>
-        <Text color={textColorSecondary} fontSize="sm">
-          {transaction.date}
-        </Text>
+        <VStack align="start" spacing="0">
+          <Text color={textColorSecondary} fontSize="sm">
+            {new Date(transaction.date || transaction.createdAt).toLocaleDateString()}
+          </Text>
+          <Text color={textColorSecondary} fontSize="xs">
+            {new Date(transaction.date || transaction.createdAt).toLocaleTimeString()}
+          </Text>
+        </VStack>
       </Td>
       <Td>
         <HStack spacing="2">
           <Text
-            color={getProgressColor(transaction.progress)}
+            color={getProgressColor(progress)}
             fontSize="sm"
             fontWeight="bold"
           >
-            {transaction.progress}%
+            {progress}%
           </Text>
           <Box
             w="60px"
@@ -126,9 +141,9 @@ const BlockchainTransaction = ({ transaction, index }) => {
             overflow="hidden"
           >
             <Box
-              w={`${transaction.progress}%`}
+              w={`${progress}%`}
               h="100%"
-              bg={getProgressColor(transaction.progress)}
+              bg={getProgressColor(progress)}
               borderRadius="full"
             />
           </Box>
@@ -136,13 +151,46 @@ const BlockchainTransaction = ({ transaction, index }) => {
       </Td>
       <Td>
         <Text color={textColor} fontSize="sm" fontWeight="bold">
-          {transaction.quantity?.toLocaleString() || '-'}
+          {transaction.amount?.toLocaleString() || 0}
         </Text>
+        {transaction.building && (
+          <Text color={textColorSecondary} fontSize="xs">
+            {transaction.building}
+          </Text>
+        )}
       </Td>
       <Td>
         <Text color={textColorSecondary} fontSize="sm">
-          {transaction.value || '-'}
+          {transaction.amount ? `${transaction.amount} ENTO` : '-'}
         </Text>
+        {transaction.consumption && (
+          <Text color={textColorSecondary} fontSize="xs">
+            {transaction.consumption} kWh
+          </Text>
+        )}
+      </Td>
+      <Td>
+        <Button 
+          size="xs" 
+          colorScheme="blue" 
+          variant="ghost"
+          onClick={() => {
+            // Show transaction details
+            const details = {
+              id: transaction._id,
+              type: transaction.type,
+              amount: transaction.amount,
+              description: transaction.description,
+              building: transaction.building,
+              status: transaction.status,
+              date: new Date(transaction.date || transaction.createdAt).toLocaleString(),
+              blockchainHash: transaction.blockchainTxHash
+            };
+            alert(JSON.stringify(details, null, 2));
+          }}
+        >
+          Details
+        </Button>
       </Td>
     </Tr>
   );
@@ -156,147 +204,220 @@ export default function EmissionsData() {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const brandColor = useColorModeValue("green.400", "green.300");
 
+  // Context hooks
+  const { user, isAuthenticated } = useAuth();
+  const { currentInstitute } = useInstitute();
+  const { getTransactionHistory, carbonBalance } = useCarbon(); // ✅ Use Carbon context
+  const toast = useToast();
+
   // State management
   const [isLoading, setIsLoading] = useState(false);
   const [transactions, setTransactions] = useState([]);
+  const [error, setError] = useState(null);
 
-  // Mock blockchain transaction data
-  const mockTransactions = [
-    {
-      id: 1,
-      name: "ENERGY CONSUMPTION",
-      type: "Energy Transaction",
-      status: "failed",
-      date: "9/12/2025",
-      progress: 0,
-      quantity: -150.5,
-      value: "-150.5 ENTO",
-      txHash: "0x123456...7890abcdef"
-    },
-    {
-      id: 2,
-      name: "CARBON OFFSET_PURCHASE",
-      type: "Carbon Offset",
-      status: "verified",
-      date: "9/11/2025",
-      progress: 100,
-      quantity: -500,
-      value: "-500 ENTO",
-      txHash: "0xabcdef...1234567890"
-    },
-    {
-      id: 3,
-      name: "CREDIT",
-      type: "Credit Transaction",
-      status: "verified",
-      date: "9/10/2025",
-      progress: 100,
-      quantity: 1000,
-      value: "+1000 ENTO",
-      txHash: "0x987654...3210fedcba"
-    },
-    {
-      id: 4,
-      name: "Carbon Marketplace",
-      type: "Carbon Credit",
-      status: "verified",
-      date: "12.Jan.2021",
-      progress: 75.5,
-      quantity: 2458,
-      value: "2,458 ENTO",
-      txHash: "0x1234567890abcdef1234567890abcdef12345678"
-    },
-    {
-      id: 5,
-      name: "Renewable Energy Credits",
-      type: "Energy Credit",
-      status: "verified",
-      date: "21.Feb.2021",
-      progress: 35.4,
-      quantity: 1485,
-      value: "1,485 ENTO",
-      txHash: "0xabcdef1234567890abcdef1234567890abcdef12"
-    },
-    {
-      id: 6,
-      name: "Carbon Offsets",
-      type: "Offset Credit",
-      status: "pending",
-      date: "13.Mar.2021",
-      progress: 25,
-      quantity: 1024,
-      value: "1,024 ENTO",
-      txHash: "0x9876543210fedcba9876543210fedcba98765432"
-    },
-    {
-      id: 7,
-      name: "Sustainable Assets",
-      type: "Asset Token",
-      status: "verified",
-      date: "24.Jan.2021",
-      progress: 100,
-      quantity: 858,
-      value: "858 ENTO",
-      txHash: "0x456789abcdef0123456789abcdef0123456789ab"
-    },
-    {
-      id: 8,
-      name: "Energy Trading",
-      type: "Energy Trade",
-      status: "verified",
-      date: "24.Oct.2022",
-      progress: 75.5,
-      quantity: 1024,
-      value: "1,024 ENTO",
-      txHash: "0x2345678901bcdef2345678901bcdef2345678901"
-    },
-    {
-      id: 9,
-      name: "Carbon Credit Sale",
-      type: "Carbon Sale",
-      status: "verified",
-      date: "24.Oct.2022",
-      progress: 75.5,
-      quantity: 1024,
-      value: "1,024 ENTO",
-      txHash: "0x3456789012cdef3456789012cdef3456789012"
-    },
-    {
-      id: 10,
-      name: "Green Energy Purchase",
-      type: "Energy Purchase",
-      status: "verified",
-      date: "12.Jan.2021",
-      progress: 75.5,
-      quantity: 1024,
-      value: "1,024 ENTO",
-      txHash: "0x4567890123def4567890123def4567890123def"
+  // ✅ UPDATED: Fetch transactions using Carbon context
+  const fetchTransactions = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔍 =================================');
+      console.log('🔍 BLOCKCHAIN TRANSACTION FETCH:');
+      console.log('🔍 =================================');
+      console.log('  📊 User authenticated:', isAuthenticated);
+      console.log('  👤 User:', user?.email);
+      console.log('  🏫 Current institute:', currentInstitute?.name || user?.institute);
+      
+      // Check authentication
+      if (!isAuthenticated || !user) {
+        throw new Error('Please log in to view transactions');
+      }
+      
+      // Get institute ID
+      const instituteId = currentInstitute?.name || user?.institute || 'default';
+      
+      if (!instituteId || instituteId === 'default') {
+        throw new Error('No institute selected. Please select an institute.');
+      }
+      
+      console.log('  🎯 Fetching for institute:', instituteId);
+      
+      // ✅ Use Carbon context method
+      const transactionData = await getTransactionHistory(100, 0);
+      
+      console.log('📊 Raw transaction data:', transactionData);
+      
+      if (!transactionData || transactionData.length === 0) {
+        console.warn('⚠️ No transactions found');
+        setTransactions([]);
+        toast({
+          title: "No Transactions Found",
+          description: `No blockchain transactions found for ${instituteId}`,
+          status: "info",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+
+      // ✅ Format transactions for display
+      const formattedTransactions = transactionData.map((tx, index) => ({
+        id: tx._id || tx.id || `tx-${index}`,
+        _id: tx._id || tx.id || `tx-${index}`,
+        type: tx.type || 'unknown_transaction',
+        status: tx.status || 'verified', // Default to verified for MongoDB data
+        date: tx.date || tx.createdAt || new Date().toISOString(),
+        confirmations: tx.confirmations || 10, // Default high confirmations
+        amount: parseFloat(tx.amount) || 0,
+        blockchainTxHash: tx.blockchainTxHash || null,
+        description: tx.description || '',
+        building: tx.building || '',
+        consumption: tx.consumption || 0,
+        institute: tx.institute || tx.instituteId || instituteId
+      }));
+
+      // Sort by date (newest first)
+      formattedTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      console.log('✅ Formatted transactions:', formattedTransactions.length);
+      setTransactions(formattedTransactions);
+      
+      // Show success toast
+      toast({
+        title: "Transactions Loaded",
+        description: `Successfully loaded ${formattedTransactions.length} transactions`,
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+      });
+      
+    } catch (err) {
+      console.error('💥 Transaction fetch error:', err);
+      setError(err.message);
+      setTransactions([]);
+      
+      // Show error toast
+      toast({
+        title: "Failed to Load Transactions",
+        description: err.message,
+        status: "error",
+        duration: 6000,
+        isClosable: true,
+      });
+      
+      // If it's an auth error, redirect to login
+      if (err.message.includes('Authentication') || err.message.includes('log in')) {
+        setTimeout(() => {
+          window.location.href = '/auth/sign-in';
+        }, 2000);
+      }
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
+  // ✅ Load transactions when component mounts or dependencies change
   useEffect(() => {
-    setTransactions(mockTransactions);
-  }, []); // Empty dependency array is correct here
+    console.log('🔄 useEffect triggered:', {
+      isAuthenticated,
+      hasUser: !!user,
+      institute: currentInstitute?.name || user?.institute
+    });
+    
+    if (isAuthenticated && user && (currentInstitute || user?.institute)) {
+      fetchTransactions();
+    } else {
+      if (!isAuthenticated) {
+        setError('Please log in to view transactions');
+      } else if (!currentInstitute && !user?.institute) {
+        setError('Please select an institute to view transactions');
+      }
+    }
+  }, [isAuthenticated, user, currentInstitute]);
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setTransactions([...mockTransactions]);
-      setIsLoading(false);
-    }, 1500);
+    console.log('🔄 Manual refresh triggered');
+    fetchTransactions();
   };
 
   const handleExport = () => {
-    // Simulate export functionality
-    console.log("Exporting blockchain transactions...");
+    console.log("📥 Export transactions requested");
+    
+    if (transactions.length === 0) {
+      toast({
+        title: "No Data to Export",
+        description: "No transactions available to export",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Create CSV content
+    const csvHeaders = ['Type', 'Status', 'Date', 'Amount', 'Description', 'Building', 'Hash'];
+    const csvData = transactions.map(tx => [
+      tx.type,
+      tx.status,
+      new Date(tx.date).toLocaleString(),
+      tx.amount,
+      tx.description,
+      tx.building || '',
+      tx.blockchainTxHash || tx._id
+    ]);
+    
+    const csvContent = [csvHeaders, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+    
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `blockchain-transactions-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+      title: "Export Successful",
+      description: "Transaction data exported to CSV file",
+      status: "success",
+      duration: 3000,
+      isClosable: true,
+    });
   };
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Box pt={{ base: "130px", md: "80px", xl: "80px" }} textAlign="center">
+        <Card p="40px" maxW="500px" mx="auto">
+          <VStack spacing="20px">
+            <Icon as={MdError} w="60px" h="60px" color="orange.500" />
+            <Heading size="lg" color={textColor}>Authentication Required</Heading>
+            <Text color={textColorSecondary}>Please log in to view blockchain transactions.</Text>
+            <Button colorScheme="blue" onClick={() => window.location.href = '/auth/sign-in'}>
+              Go to Login
+            </Button>
+          </VStack>
+        </Card>
+      </Box>
+    );
+  }
 
   // Calculate summary stats
   const totalTransactions = transactions.length;
   const verifiedTransactions = transactions.filter(tx => tx.status === 'verified').length;
-  const totalValue = transactions.reduce((sum, tx) => sum + (tx.quantity || 0), 0);
-  const averageProgress = transactions.reduce((sum, tx) => sum + tx.progress, 0) / totalTransactions;
+  const totalValue = transactions.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const averageProgress = transactions.length > 0 
+    ? transactions.reduce((sum, tx) => {
+        const progress = tx.status === 'verified' ? 100 : tx.status === 'pending' ? 50 : 0;
+        return sum + progress;
+      }, 0) / totalTransactions
+    : 0;
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }}>
@@ -307,7 +428,7 @@ export default function EmissionsData() {
             🔗 Blockchain Transactions
           </Heading>
           <Text color={textColorSecondary} fontSize="lg">
-            Real-time carbon credit and energy token transactions
+            Real-time carbon credit and energy token transactions for {currentInstitute?.name || user?.institute || 'your institute'}
           </Text>
         </Box>
         <HStack spacing="3">
@@ -325,6 +446,7 @@ export default function EmissionsData() {
             variant="outline"
             size="sm"
             onClick={handleExport}
+            isDisabled={transactions.length === 0}
           >
             Export
           </Button>
@@ -351,7 +473,7 @@ export default function EmissionsData() {
             </StatNumber>
             <StatHelpText color={textColorSecondary}>
               <Icon as={MdBlock} mr="1" />
-              Blockchain Records
+              Database Records
             </StatHelpText>
           </Stat>
         </Card>
@@ -364,7 +486,7 @@ export default function EmissionsData() {
             </StatNumber>
             <StatHelpText color={textColorSecondary}>
               <Icon as={MdCheckCircle} mr="1" />
-              {Math.round((verifiedTransactions / totalTransactions) * 100)}% Success Rate
+              {totalTransactions > 0 ? Math.round((verifiedTransactions / totalTransactions) * 100) : 0}% Success Rate
             </StatHelpText>
           </Stat>
         </Card>
@@ -384,13 +506,13 @@ export default function EmissionsData() {
         
         <Card bg={cardBg} borderColor={borderColor} p="20px">
           <Stat textAlign="center">
-            <StatLabel color={textColorSecondary} fontSize="sm">Avg Progress</StatLabel>
+            <StatLabel color={textColorSecondary} fontSize="sm">Balance</StatLabel>
             <StatNumber color="purple.500" fontSize="2xl" fontWeight="bold">
-              {Math.round(averageProgress)}%
+              {carbonBalance || 0}
             </StatNumber>
             <StatHelpText color={textColorSecondary}>
               <Icon as={MdTrendingUp} mr="1" />
-              Completion Rate
+              Carbon Credits
             </StatHelpText>
           </Stat>
         </Card>
@@ -401,7 +523,7 @@ export default function EmissionsData() {
         <CardHeader>
           <HStack justify="space-between" align="center">
             <Heading size="lg" color={textColor}>
-              Live Blockchain Transactions
+              Transaction History from Database
             </Heading>
             <HStack spacing="2">
               <Button size="sm" variant="outline" leftIcon={<Icon as={MdVisibility} />}>
@@ -412,8 +534,34 @@ export default function EmissionsData() {
         </CardHeader>
         <CardBody>
           {isLoading ? (
-            <Flex justify="center" align="center" h="200px">
+            <Flex justify="center" align="center" h="200px" direction="column">
               <Spinner size="xl" color="green.500" />
+              <Text mt="4" color={textColorSecondary}>Loading blockchain transactions...</Text>
+              <Text fontSize="sm" color={textColorSecondary} mt="2">
+                Fetching data for {currentInstitute?.name || user?.institute || 'your institute'}
+              </Text>
+            </Flex>
+          ) : error ? (
+            <Flex justify="center" align="center" h="200px" direction="column">
+              <Icon as={MdError} w="40px" h="40px" color="red.500" mb="2" />
+              <Text color="red.500" textAlign="center" mb="2" fontWeight="bold">
+                Transaction Loading Failed
+              </Text>
+              <Text color="red.500" textAlign="center" mb="4" fontSize="sm" maxW="400px">
+                {error}
+              </Text>
+              <HStack spacing="3">
+                <Button onClick={handleRefresh} size="sm" colorScheme="blue">
+                  Try Again
+                </Button>
+                <Button 
+                  onClick={() => console.log('🔍 Debug info:', { isAuthenticated, user, currentInstitute, transactions: transactions.length })} 
+                  size="sm" 
+                  variant="outline"
+                >
+                  Debug Info
+                </Button>
+              </HStack>
             </Flex>
           ) : (
             <TableContainer>
@@ -424,17 +572,40 @@ export default function EmissionsData() {
                     <Th color={textColorSecondary}>Status</Th>
                     <Th color={textColorSecondary}>Date</Th>
                     <Th color={textColorSecondary}>Progress</Th>
-                    <Th color={textColorSecondary}>Quantity</Th>
+                    <Th color={textColorSecondary}>Amount</Th>
                     <Th color={textColorSecondary}>Value</Th>
+                    <Th color={textColorSecondary}>Actions</Th>
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {transactions.map((transaction) => (
-                    <BlockchainTransaction
-                      key={transaction.id}
-                      transaction={transaction}
-                    />
-                  ))}
+                  {transactions.length > 0 ? (
+                    transactions.map((transaction, index) => (
+                      <BlockchainTransaction
+                        key={transaction.id || transaction._id || index}
+                        transaction={transaction}
+                        index={index}
+                      />
+                    ))
+                  ) : (
+                    <Tr>
+                      <Td colSpan={7} textAlign="center" py="8">
+                        <VStack spacing="3">
+                          <Icon as={MdBlock} w="40px" h="40px" color="gray.400" />
+                          <Text color={textColorSecondary} fontWeight="bold">
+                            No transactions found
+                          </Text>
+                          <Text color={textColorSecondary} fontSize="sm" textAlign="center">
+                            No blockchain transactions found for <strong>{currentInstitute?.name || user?.institute || 'your institute'}</strong>.
+                            <br />
+                            Try refreshing or performing some transactions first.
+                          </Text>
+                          <Button onClick={handleRefresh} size="sm" colorScheme="blue" mt="2">
+                            Refresh Data
+                          </Button>
+                        </VStack>
+                      </Td>
+                    </Tr>
+                  )}
                 </Tbody>
               </Table>
             </TableContainer>

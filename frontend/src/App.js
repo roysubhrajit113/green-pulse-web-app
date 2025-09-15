@@ -9,9 +9,10 @@ import { useState, useEffect } from 'react';
 import { CarbonProvider } from './contexts/CarbonContext';
 import { InstituteProvider } from './contexts/InstituteContext';
 import { DepartmentProvider } from './contexts/DepartmentContext';
-import { AuthProvider } from './contexts/AuthContext'; // Add this import
+import { AuthProvider } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/loading_screen/LoadingScreen';
+import Chatbot from './components/chatbot/Chatbot'; // Added from first code
 
 export default function Main() {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
@@ -20,12 +21,14 @@ export default function Main() {
   const [loadingMessage, setLoadingMessage] = useState("Initializing Green Pulse Dashboard...");
   
   useEffect(() => {
-    // Simulate loading process with progress updates
+    // Enhanced loading process with comprehensive progress updates
     const loadingSteps = [
-      { progress: 20, message: "Loading blockchain services..." },
-      { progress: 40, message: "Connecting to energy oracle..." },
-      { progress: 60, message: "Initializing carbon tracking..." },
-      { progress: 80, message: "Setting up dashboard components..." },
+      { progress: 15, message: "Loading blockchain services..." },
+      { progress: 30, message: "Connecting to energy oracle..." },
+      { progress: 45, message: "Initializing carbon tracking..." },
+      { progress: 60, message: "Setting up energy tokens..." },
+      { progress: 75, message: "Loading institute data..." },
+      { progress: 90, message: "Setting up dashboard components..." },
       { progress: 100, message: "Welcome to Green Pulse Dashboard!" }
     ];
 
@@ -37,20 +40,20 @@ export default function Main() {
         currentStep++;
       } else {
         clearInterval(interval);
-        // Add a small delay before hiding loading screen
+        // Add a small delay before hiding loading screen (from second code)
         setTimeout(() => {
           setIsLoading(false);
         }, 500);
       }
-    }, 800);
+    }, 700); // Slightly faster progression
 
     return () => clearInterval(interval);
   }, []);
   
   return (
     <ErrorBoundary>
-      <ChakraProvider theme={currentTheme || initialTheme}>
-        <AuthProvider> {/* Wrap with AuthProvider */}
+      <ChakraProvider theme={currentTheme || initialTheme}> {/* Added fallback from second code */}
+        <AuthProvider>
           <InstituteProvider>
             <DepartmentProvider>
               <CarbonProvider>
@@ -71,10 +74,12 @@ export default function Main() {
                   />
                   <Route path="/" element={<Navigate to="/auth/sign-in" replace />} />
                 </Routes>
+                {/* Add Chatbot component to appear on all pages (from first code) */}
+                <Chatbot />
               </CarbonProvider>
             </DepartmentProvider>
           </InstituteProvider>
-        </AuthProvider> {/* Close AuthProvider */}
+        </AuthProvider>
       </ChakraProvider>
     </ErrorBoundary>
   );

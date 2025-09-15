@@ -35,75 +35,48 @@ const AlertSystem = () => {
     efficiency: 70 // percentage
   });
 
-  const { getEnergyConsumptionData, dashboardData, loading } = useCarbon();
-  const [energyData, setEnergyData] = useState({
-    current: 2847,
-    efficiency: [85, 88, 82, 90, 87, 92]
-  });
-
-  // Load energy data
-  useEffect(() => {
-    if (!getEnergyConsumptionData || loading) return;
-    
-    const loadEnergyData = async () => {
-      try {
-        const data = await getEnergyConsumptionData();
-        setEnergyData(data);
-      } catch (error) {
-        console.error('Error loading energy data for alerts:', error);
-      }
-    };
-    
-    loadEnergyData();
-  }, [getEnergyConsumptionData, loading]);
+  const { getEnergyConsumptionData, dashboardData } = useCarbon();
 
   // Alert types and their configurations
   const alertTypes = {
     energy_spike: {
       icon: MdWarning,
       color: 'orange',
-      status: 'warning',
       title: 'Energy Consumption Alert'
     },
     co2_threshold: {
       icon: MdError,
       color: 'red',
-      status: 'error',
       title: 'CO₂ Savings Alert'
     },
     budget_exceeded: {
       icon: MdError,
       color: 'red',
-      status: 'error',
       title: 'Carbon Budget Alert'
     },
     efficiency_low: {
       icon: MdWarning,
       color: 'yellow',
-      status: 'warning',
       title: 'Efficiency Alert'
     },
     system_info: {
       icon: MdInfo,
       color: 'blue',
-      status: 'info',
       title: 'System Information'
     },
     success: {
       icon: MdCheckCircle,
       color: 'green',
-      status: 'success',
       title: 'Success'
     }
   };
 
   // Check for threshold violations and generate alerts
   useEffect(() => {
-    // Skip if data is not ready or we're in fallback data state
-    if (!dashboardData || !energyData || !dashboardData.instituteDisplayName) return;
-    if (dashboardData.instituteDisplayName === 'Default Institute') return;
+    if (!dashboardData) return;
 
     const newAlerts = [];
+    const energyData = getEnergyConsumptionData();
     const currentTime = new Date().toISOString();
 
     // Check energy consumption threshold
@@ -141,9 +114,7 @@ const AlertSystem = () => {
     }
 
     // Check efficiency threshold
-    const currentEfficiency = energyData.efficiency && energyData.efficiency.length > 0 
-      ? energyData.efficiency[energyData.efficiency.length - 1] 
-      : 92;
+    const currentEfficiency = energyData.efficiency[energyData.efficiency.length - 1];
     if (currentEfficiency < thresholds.efficiency) {
       newAlerts.push({
         id: `efficiency_${Date.now()}`,
@@ -172,15 +143,14 @@ const AlertSystem = () => {
       const uniqueNewAlerts = newAlerts.filter(alert => !existingIds.has(alert.id));
       return [...uniqueNewAlerts, ...prevAlerts].slice(0, 10); // Keep only last 10 alerts
     });
-  }, [dashboardData, energyData, thresholds]);
+  }, [dashboardData, thresholds, getEnergyConsumptionData]);
 
   const dismissAlert = (alertId) => {
     setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== alertId));
   };
 
   const getSeverityColor = (severity) => {
-    if (!severity || typeof severity !== 'string') return 'gray';
-    switch (severity.toLowerCase()) {
+    switch (severity) {
       case 'critical': return 'red';
       case 'high': return 'orange';
       case 'medium': return 'yellow';
@@ -190,22 +160,10 @@ const AlertSystem = () => {
   };
 
   const formatTimestamp = (timestamp) => {
-    try {
-      if (!timestamp) return 'Unknown time';
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) return 'Invalid time';
-      return date.toLocaleTimeString();
-    } catch (error) {
-      return 'Unknown time';
-    }
+    return new Date(timestamp).toLocaleTimeString();
   };
 
   const visibleAlerts = isExpanded ? alerts : alerts.slice(0, 3);
-
-  // Don't render if context is not ready or data is loading
-  if (!getEnergyConsumptionData || loading) {
-    return null;
-  }
 
   return (
     <Box w="100%" maxW="600px">
@@ -216,7 +174,7 @@ const AlertSystem = () => {
             System Alerts
           </Text>
           {alerts.length > 0 && (
-            <Badge colorScheme={getSeverityColor(alerts[0]?.severity || 'info')}>
+            <Badge colorScheme={getSeverityColor(alerts[0]?.severity)}>
               {alerts.length}
             </Badge>
           )}
@@ -241,39 +199,34 @@ const AlertSystem = () => {
             <AlertDescription>All systems operating within normal parameters.</AlertDescription>
           </Alert>
         ) : (
-          visibleAlerts.filter(alert => alert && alert.id).map((alert) => {
-            const alertConfig = alertTypes[alert.type] || {
-              icon: MdInfo,
-              color: 'info',
-              status: 'info',
-              title: 'System Alert'
-            };
-            const AlertIconComponent = alertConfig.icon;
+          visibleAlerts.map((alert) => {
+            const alertConfig = alertTypes[alert.type];
+            const AlertIcon = alertConfig.icon;
             
             return (
               <Alert
                 key={alert.id}
-                status={alertConfig.status || 'info'}
+                status={alertConfig.color}
                 borderRadius="md"
                 position="relative"
               >
-                <AlertIcon as={AlertIconComponent} />
+                <AlertIcon as={AlertIcon} />
                 <Box flex="1">
                   <AlertTitle fontSize="sm">
-                    {alertConfig.title || 'Alert'}
+                    {alertConfig.title}
                     <Badge
                       ml={2}
-                      colorScheme={getSeverityColor(alert.severity || 'info')}
+                      colorScheme={getSeverityColor(alert.severity)}
                       size="sm"
                     >
-                      {(alert.severity || 'info').toUpperCase()}
+                      {alert.severity.toUpperCase()}
                     </Badge>
                   </AlertTitle>
                   <AlertDescription fontSize="sm">
-                    {alert.message || 'No message available'}
+                    {alert.message}
                   </AlertDescription>
                   <Text fontSize="xs" color="gray.500" mt={1}>
-                    {alert.timestamp ? formatTimestamp(alert.timestamp) : 'Unknown time'}
+                    {formatTimestamp(alert.timestamp)}
                     {alert.building && ` • ${alert.building}`}
                   </Text>
                 </Box>

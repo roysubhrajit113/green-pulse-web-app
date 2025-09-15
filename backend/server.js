@@ -6,7 +6,14 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const instituteRoutes = require('./routes/institutes');
+const alertRoutes = require('./routes/alerts');
 const carbonDataRoutes = require('./routes/carbonData');
+const alertService = require('./services/alertService');
+const buildingRoutes = require('./routes/buildings');
+const meterDataRoutes = require('./routes/meterData');
+const walletRoutes = require('./routes/wallet');
+
+
 
 // Load env vars
 dotenv.config();
@@ -19,7 +26,7 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// Enhanced CORS configuration (from second code)
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'], // Allow multiple frontend URLs
   credentials: true,
@@ -32,10 +39,14 @@ console.log('CORS configured to allow origins:', ['http://localhost:3000', 'http
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Routes
+// Routes - Combined from both files
 app.use('/api/auth', authRoutes);
 app.use('/api/institutes', instituteRoutes);
+app.use('/api/alerts', alertRoutes);
 app.use('/api/carbon-data', carbonDataRoutes);
+app.use('/api/buildings', buildingRoutes);
+app.use('/api/meter-data', meterDataRoutes);
+app.use('/api/wallet', walletRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
@@ -59,4 +70,7 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  
+  // Start the alert monitoring service (from first code)
+  alertService.start();
 });

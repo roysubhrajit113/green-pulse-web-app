@@ -19,12 +19,10 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
-  Image,
   useToast,
   Textarea,
   Input,
-  InputGroup,
-  InputLeftElement,
+  Spinner,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import {
@@ -56,32 +54,49 @@ import avatar from "assets/img/avatars/avatarSimmmple.png";
 
 // Import Auth Context and Service
 import { useAuth } from "contexts/AuthContext";
+import { useCarbon } from "contexts/CarbonContext";
 import authService from "services/authService";
 
 export default function ProfilePage() {
-  // Chakra Color Mode
+  // ✅ ALL HOOKS AT TOP LEVEL - Fix for ESLint error
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
   const cardBg = useColorModeValue("white", "navy.800");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-  const brandColor = useColorModeValue("brand.500", "white");
+  const brandColor = useColorModeValue("brand.500", "brand.300");
   const successColor = useColorModeValue("green.500", "green.300");
   const warningColor = useColorModeValue("orange.500", "orange.300");
   const errorColor = useColorModeValue("red.500", "red.300");
+  const inputBg = useColorModeValue("white", "gray.700");
+  const hoverBg = useColorModeValue("gray.50", "gray.700");
+  const subtleBg = useColorModeValue("gray.50", "gray.800");
+  const chartBrandColor = useColorModeValue("brand.600", "brand.200");
+  const chartSuccessColor = useColorModeValue("green.600", "green.200");
   
   const toast = useToast();
   const { user, updateUserData } = useAuth();
+  
+  // ✅ Get real data from Carbon context
+  const { 
+    dashboardData, 
+    carbonBalance, 
+    transactions, 
+    getEnergyConsumptionData,
+    getTransactionHistory,
+    loading: carbonLoading,
+    error: carbonError 
+  } = useCarbon();
 
-  // Personal Information State
+  // State management
   const [personalInfo, setPersonalInfo] = useState({
     name: "",
     department: "",
     branch: "",
     position: "",
-    email: "", // Will be populated from DB but non-editable
+    email: "",
     phone: "",
-    location: "", // Will be populated from DB but editable
-    education: "", // Will be populated from user.institute.name (non-editable)
+    location: "",
+    education: "",
     joinDate: "",
     employeeId: "",
     manager: "",
@@ -89,59 +104,121 @@ export default function ProfilePage() {
     bio: "",
   });
 
-  // Department & ENTO Statistics
   const [departmentStats, setDepartmentStats] = useState({
     departmentName: "",
     branch: "",
-    entoSaved: 15400,
-    entoCount: 12500,
-    carbonCredits: 1250,
-    co2Saved: 1540,
-    rank: 4,
-    totalMembers: 450,
-    activeMembers: 320,
+    entoSaved: 0,
+    entoCount: 0,
+    carbonCredits: 0,
+    co2Saved: 0,
+    rank: 0,
+    totalMembers: 0,
+    activeMembers: 0,
   });
 
-  // Savings Data for Last One Year
-  const [savingsData, setSavingsData] = useState([
-    { month: "Jan", entoSaved: 1200, co2Saved: 120 },
-    { month: "Feb", entoSaved: 1350, co2Saved: 135 },
-    { month: "Mar", entoSaved: 1100, co2Saved: 110 },
-    { month: "Apr", entoSaved: 1450, co2Saved: 145 },
-    { month: "May", entoSaved: 1600, co2Saved: 160 },
-    { month: "Jun", entoSaved: 1750, co2Saved: 175 },
-    { month: "Jul", entoSaved: 1900, co2Saved: 190 },
-    { month: "Aug", entoSaved: 2100, co2Saved: 210 },
-    { month: "Sep", entoSaved: 1850, co2Saved: 185 },
-    { month: "Oct", entoSaved: 2000, co2Saved: 200 },
-    { month: "Nov", entoSaved: 2200, co2Saved: 220 },
-    { month: "Dec", entoSaved: 2400, co2Saved: 240 },
-  ]);
+  const [savingsData, setSavingsData] = useState([]);
+  const [energyData, setEnergyData] = useState(null);
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
   const [isEditing, setIsEditing] = useState(false);
-  // UPDATED: Removed 'education' and 'email' from editData since they're not editable
-  // Location is still editable but populated from DB
   const [editData, setEditData] = useState({
     name: '',
     position: '',
     department: '',
     branch: '',
     bio: '',
-    location: '' // Still editable but populated from DB
+    location: ''
   });
   const [postText, setPostText] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ✅ Process transaction data into monthly savings
+  const processTransactionData = (transactions) => {
+    const monthlyMap = {};
+    const currentYear = new Date().getFullYear();
+    
+    // Initialize with zeros for all months
+    for (let i = 0; i < 12; i++) {
+      const monthName = new Date(currentYear, i).toLocaleString('default', { month: 'short' });
+      monthlyMap[monthName] = { entoSaved: 0, co2Saved: 0 };
+    }
+
+    // Process transactions
+    transactions.forEach(tx => {
+      const date = new Date(tx.date || tx.createdAt);
+      if (date.getFullYear() === currentYear) {
+        const monthName = date.toLocaleString('default', { month: 'short' });
+        if (monthlyMap[monthName]) {
+          if (tx.type === 'carbon_offset_purchase' || tx.type === 'ento_transfer') {
+            monthlyMap[monthName].entoSaved += tx.amount || 0;
+            monthlyMap[monthName].co2Saved += (tx.amount * 0.1) || 0;
+          }
+        }
+      }
+    });
+
+    return Object.entries(monthlyMap).map(([month, data]) => ({
+      month,
+      entoSaved: data.entoSaved,
+      co2Saved: Math.round(data.co2Saved)
+    }));
+  };
+
+  // ✅ Calculate total ENTO saved from transactions
+  const calculateTotalEntoSaved = (transactions) => {
+    return transactions.reduce((total, tx) => {
+      if (tx.type === 'carbon_offset_purchase' || tx.type === 'ento_transfer') {
+        return total + (tx.amount || 0);
+      }
+      return total;
+    }, 0);
+  };
+
+  // ✅ Load real carbon and energy data
+  const loadCarbonData = async () => {
+    try {
+      // Get energy consumption data
+      const energyConsumption = await getEnergyConsumptionData();
+      setEnergyData(energyConsumption);
+
+      // Get recent transactions for trends
+      const transactionHistory = await getTransactionHistory(50, 0);
+      setRecentTransactions(transactionHistory);
+
+      // Process transactions into monthly savings data
+      if (transactionHistory && transactionHistory.length > 0) {
+        const monthlyData = processTransactionData(transactionHistory);
+        setSavingsData(monthlyData);
+      }
+
+      // Update department stats from dashboard data
+      if (dashboardData) {
+        setDepartmentStats(prev => ({
+          ...prev,
+          departmentName: personalInfo.department || dashboardData.instituteDisplayName || "",
+          branch: personalInfo.branch || "",
+          entoSaved: calculateTotalEntoSaved(transactionHistory),
+          entoCount: carbonBalance || dashboardData.walletBalance || 0,
+          carbonCredits: dashboardData.offsetsPurchased || 0,
+          co2Saved: dashboardData.co2Savings || 0,
+          rank: 4,
+          totalMembers: 450,
+          activeMembers: 320,
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading carbon data:', error);
+    }
+  };
 
   // Load user data on component mount
   useEffect(() => {
     const loadUserData = async () => {
-      // First, try to load from localStorage
       const savedProfileData = localStorage.getItem('profileData');
-      const savedDeptStats = localStorage.getItem('departmentStats');
 
       if (savedProfileData) {
         const profileData = JSON.parse(savedProfileData);
         setPersonalInfo(profileData);
-        // UPDATED: Don't include education and email in editData
         setEditData({
           name: profileData.name || '',
           position: profileData.position || '',
@@ -152,11 +229,6 @@ export default function ProfilePage() {
         });
       }
 
-      if (savedDeptStats) {
-        setDepartmentStats(JSON.parse(savedDeptStats));
-      }
-
-      // Then, try to get fresh data from server only once
       try {
         const response = await authService.getProfile();
         if (response.success) {
@@ -167,19 +239,17 @@ export default function ProfilePage() {
             department: userData.department || '',
             branch: userData.branch || '',
             bio: userData.bio || '',
-            email: userData.email || '', // UPDATED: Get from user data (non-editable)
-            education: user?.institute?.name || 'No Institute', // UPDATED: Get from user.institute.name (non-editable)
-            location: userData.location || '', // UPDATED: Get from user data but still editable
-            // Keep other fields
-            phone: "+1 (555) 123-4567",
-            employeeId: "GP-2022-001",
-            manager: "Dr. Sarah Chen",
-            team: "Carbon Analytics Team",
-            joinDate: "2022-03-15"
+            email: userData.email || '',
+            education: user?.institute?.name || 'No Institute',
+            location: userData.location || '',
+            phone: userData.phone || "+1 (555) 123-4567",
+            employeeId: userData.employeeId || "GP-2022-001",
+            manager: userData.manager || "Dr. Sarah Chen",
+            team: userData.team || "Carbon Analytics Team",
+            joinDate: userData.joinDate || "2022-03-15"
           };
 
           setPersonalInfo(updatedInfo);
-          // UPDATED: Don't include education and email in editData
           setEditData({
             name: updatedInfo.name,
             position: updatedInfo.position,
@@ -189,27 +259,10 @@ export default function ProfilePage() {
             location: updatedInfo.location
           });
           localStorage.setItem('profileData', JSON.stringify(updatedInfo));
-
-          const updatedDeptStats = {
-            departmentName: userData.department || '',
-            branch: userData.branch || '',
-            entoSaved: 15400,
-            entoCount: 12500,
-            carbonCredits: 1250,
-            co2Saved: 1540,
-            rank: 4,
-            totalMembers: 450,
-            activeMembers: 320,
-          };
-          setDepartmentStats(updatedDeptStats);
-          localStorage.setItem('departmentStats', JSON.stringify(updatedDeptStats));
-
-          // Update global context
           updateUserData(userData);
         }
       } catch (error) {
         console.error('Error loading fresh data:', error);
-        // Fall back to user context data if available
         if (user && !savedProfileData) {
           const fallbackInfo = {
             name: user.fullName || '',
@@ -217,9 +270,9 @@ export default function ProfilePage() {
             department: user.department || '',
             branch: user.branch || '',
             bio: user.bio || '',
-            email: user.email || '', // UPDATED: Get from user data (non-editable)
-            education: user.institute?.name || 'No Institute', // UPDATED: Get from user.institute.name (non-editable)
-            location: user.location || '', // UPDATED: Get from user data but still editable
+            email: user.email || '',
+            education: user.institute?.name || 'No Institute',
+            location: user.location || '',
             phone: "+1 (555) 123-4567",
             employeeId: "GP-2022-001",
             manager: "Dr. Sarah Chen",
@@ -227,7 +280,6 @@ export default function ProfilePage() {
             joinDate: "2022-03-15"
           };
           setPersonalInfo(fallbackInfo);
-          // UPDATED: Don't include education and email in editData
           setEditData({
             name: fallbackInfo.name,
             position: fallbackInfo.position,
@@ -241,12 +293,18 @@ export default function ProfilePage() {
     };
 
     loadUserData();
-  }, []); // Remove dependencies to prevent infinite loops
+  }, []);
+
+  // Load carbon data when dashboard data is available
+  useEffect(() => {
+    if (dashboardData && personalInfo.name) {
+      loadCarbonData();
+    }
+  }, [dashboardData, personalInfo.name]);
 
   // Sync editData with personalInfo when not editing
   useEffect(() => {
     if (!isEditing && personalInfo.name) {
-      // UPDATED: Don't include education and email in editData
       setEditData({
         name: personalInfo.name || '',
         position: personalInfo.position || '',
@@ -260,7 +318,6 @@ export default function ProfilePage() {
 
   const handleEdit = () => {
     setIsEditing(true);
-    // UPDATED: Don't include education and email in editData
     setEditData({
       name: personalInfo.name || '',
       position: personalInfo.position || '',
@@ -273,7 +330,6 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     try {
-      // UPDATED: Don't include education and email in updateData
       const updateData = {
         fullName: editData.name,
         position: editData.position,
@@ -286,7 +342,6 @@ export default function ProfilePage() {
       const response = await authService.updateProfile(updateData);
       
       if (response.success) {
-        // Update local state and localStorage for persistence
         const updatedPersonalInfo = {
           ...personalInfo,
           name: updateData.fullName,
@@ -295,21 +350,16 @@ export default function ProfilePage() {
           branch: updateData.branch,
           bio: updateData.bio,
           location: updateData.location
-          // Keep email and education as is - don't update them
         };
 
         setPersonalInfo(updatedPersonalInfo);
         localStorage.setItem('profileData', JSON.stringify(updatedPersonalInfo));
 
-        // Update department stats
-        const updatedDeptStats = {
-          ...departmentStats,
+        setDepartmentStats(prev => ({
+          ...prev,
           departmentName: updateData.department,
           branch: updateData.branch
-        };
-        
-        setDepartmentStats(updatedDeptStats);
-        localStorage.setItem('departmentStats', JSON.stringify(updatedDeptStats));
+        }));
         
         setIsEditing(false);
         toast({
@@ -320,8 +370,8 @@ export default function ProfilePage() {
           isClosable: true,
         });
 
-        // Update global context
         updateUserData(response.data);
+        loadCarbonData();
       }
     } catch (error) {
       console.error('Profile update error:', error);
@@ -337,7 +387,6 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    // UPDATED: Don't include education and email in editData
     setEditData({
       name: personalInfo.name || '',
       position: personalInfo.position || '',
@@ -361,9 +410,6 @@ export default function ProfilePage() {
     }
   };
 
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Add this refresh function
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
@@ -376,10 +422,9 @@ export default function ProfilePage() {
           department: userData.department || '',
           branch: userData.branch || '',
           bio: userData.bio || '',
-          email: userData.email || '', // UPDATED: Get from user data (non-editable)
-          education: user?.institute?.name || 'No Institute', // UPDATED: Get from user.institute.name (non-editable)
-          location: userData.location || '', // UPDATED: Get from user data but still editable
-          // Keep other fields
+          email: userData.email || '',
+          education: user?.institute?.name || 'No Institute',
+          location: userData.location || '',
           phone: "+1 (555) 123-4567",
           employeeId: "GP-2022-001",
           manager: "Dr. Sarah Chen",
@@ -388,7 +433,6 @@ export default function ProfilePage() {
         };
 
         setPersonalInfo(updatedInfo);
-        // UPDATED: Don't include education and email in editData
         setEditData({
           name: updatedInfo.name,
           position: updatedInfo.position,
@@ -398,30 +442,15 @@ export default function ProfilePage() {
           location: updatedInfo.location
         });
         localStorage.setItem('profileData', JSON.stringify(updatedInfo));
-
-        const updatedDeptStats = {
-          departmentName: userData.department || '',
-          branch: userData.branch || '',
-          entoSaved: 15400,
-          entoCount: 12500,
-          carbonCredits: 1250,
-          co2Saved: 1540,
-          rank: 4,
-          totalMembers: 450,
-          activeMembers: 320,
-        };
-        setDepartmentStats(updatedDeptStats);
-        localStorage.setItem('departmentStats', JSON.stringify(updatedDeptStats));
-
-        // Update global context
         updateUserData(userData);
         
-        // Notify navbar of update
+        await loadCarbonData();
+        
         window.dispatchEvent(new CustomEvent('profileUpdated'));
 
         toast({
           title: "Profile Refreshed",
-          description: "Your profile data has been updated from server.",
+          description: "Your profile and carbon data has been updated.",
           status: "success",
           duration: 3000,
           isClosable: true,
@@ -460,7 +489,7 @@ export default function ProfilePage() {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            isLoading={isRefreshing}
+            isLoading={isRefreshing || carbonLoading}
             loadingText="Refreshing..."
           >
             Refresh
@@ -520,19 +549,19 @@ export default function ProfilePage() {
             <VStack spacing="2">
               <Heading color="white" fontSize="2xl" textShadow="2px 2px 4px rgba(0,0,0,0.5)">
                 {isEditing ? (
-                  <input
+                  <Input
                     value={editData.name}
                     onChange={(e) => setEditData({...editData, name: e.target.value})}
-                    style={{
-                      background: 'rgba(255,255,255,0.9)',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '4px',
-                      padding: '4px 8px',
-                      color: textColor,
-                      fontSize: '24px',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}
+                    bg={inputBg}
+                    border="1px solid"
+                    borderColor={borderColor}
+                    borderRadius="4px"
+                    p="4px 8px"
+                    color={textColor}
+                    fontSize="24px"
+                    fontWeight="bold"
+                    textAlign="center"
+                    _focus={{ borderColor: brandColor }}
                   />
                 ) : (
                   personalInfo.name
@@ -540,18 +569,18 @@ export default function ProfilePage() {
               </Heading>
               <Text color="white" fontSize="lg" textShadow="1px 1px 2px rgba(0,0,0,0.5)">
                 {isEditing ? (
-                  <input
+                  <Input
                     value={editData.position}
                     onChange={(e) => setEditData({...editData, position: e.target.value})}
-                    style={{
-                      background: 'rgba(255,255,255,0.9)',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '4px',
-                      padding: '4px 8px',
-                      color: textColorSecondary,
-                      fontSize: '18px',
-                      textAlign: 'center'
-                    }}
+                    bg={inputBg}
+                    border="1px solid"
+                    borderColor={borderColor}
+                    borderRadius="4px"
+                    p="4px 8px"
+                    color={textColorSecondary}
+                    fontSize="18px"
+                    textAlign="center"
+                    _focus={{ borderColor: brandColor }}
                   />
                 ) : (
                   personalInfo.position
@@ -568,21 +597,20 @@ export default function ProfilePage() {
               <StatLabel color={textColorSecondary} fontSize="sm">Department</StatLabel>
               <StatNumber color={textColor} fontSize="lg">
                 {isEditing ? (
-                  <input
+                  <Input
                     value={editData.department}
                     onChange={(e) => setEditData({...editData, department: e.target.value})}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '4px',
-                      padding: '4px 8px',
-                      color: textColor,
-                      width: '100%',
-                      textAlign: 'center'
-                    }}
+                    bg="transparent"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    borderRadius="4px"
+                    p="4px 8px"
+                    color={textColor}
+                    textAlign="center"
+                    _focus={{ borderColor: brandColor }}
                   />
                 ) : (
-                  departmentStats.departmentName
+                  departmentStats.departmentName || "Not set"
                 )}
               </StatNumber>
             </Stat>
@@ -591,21 +619,20 @@ export default function ProfilePage() {
               <StatLabel color={textColorSecondary} fontSize="sm">Branch</StatLabel>
               <StatNumber color={textColor} fontSize="lg">
                 {isEditing ? (
-                  <input
+                  <Input
                     value={editData.branch}
                     onChange={(e) => setEditData({...editData, branch: e.target.value})}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '4px',
-                      padding: '4px 8px',
-                      color: textColor,
-                      width: '100%',
-                      textAlign: 'center'
-                    }}
+                    bg="transparent"
+                    border="1px solid"
+                    borderColor={borderColor}
+                    borderRadius="4px"
+                    p="4px 8px"
+                    color={textColor}
+                    textAlign="center"
+                    _focus={{ borderColor: brandColor }}
                   />
                 ) : (
-                  departmentStats.branch
+                  departmentStats.branch || "Not set"
                 )}
               </StatNumber>
             </Stat>
@@ -613,195 +640,215 @@ export default function ProfilePage() {
             <Stat textAlign="center">
               <StatLabel color={textColorSecondary} fontSize="sm">ENTO Saved</StatLabel>
               <StatNumber color={successColor} fontSize="lg">
-                {departmentStats.entoSaved.toLocaleString()}
+                {carbonLoading ? <Spinner size="sm" /> : departmentStats.entoSaved.toLocaleString()}
               </StatNumber>
+              <StatHelpText color={textColorSecondary} fontSize="xs">
+                From transactions
+              </StatHelpText>
             </Stat>
             
             <Stat textAlign="center">
-              <StatLabel color={textColorSecondary} fontSize="sm">ENTO Count</StatLabel>
+              <StatLabel color={textColorSecondary} fontSize="sm">Carbon Credits</StatLabel>
               <StatNumber color={brandColor} fontSize="lg">
-                {departmentStats.entoCount.toLocaleString()}
+                {carbonLoading ? <Spinner size="sm" /> : (carbonBalance || departmentStats.carbonCredits).toLocaleString()}
               </StatNumber>
+              <StatHelpText color={textColorSecondary} fontSize="xs">
+                Current balance
+              </StatHelpText>
             </Stat>
           </SimpleGrid>
 
           {/* Profile Content */}
           <Box px="0" py="30px">
-                <SimpleGrid columns={{ base: 1, lg: 2 }} gap="30px">
-                  {/* About Me Section */}
-                  <Card bg={cardBg} borderColor={borderColor}>
-                    <CardHeader>
-                      <Heading size="md" color={textColor}>
-                        About Me
-                      </Heading>
-                    </CardHeader>
-                    <CardBody>
-                      <VStack spacing="4" align="stretch">
-                        <Text color={textColor} lineHeight="1.6">
-                          {isEditing ? (
-                            <textarea
-                              value={editData.bio}
-                              onChange={(e) => setEditData({...editData, bio: e.target.value})}
-                              style={{
-                                background: 'transparent',
-                                border: '1px solid #e2e8f0',
-                                borderRadius: '4px',
-                                padding: '8px',
-                                color: textColor,
-                                width: '100%',
-                                minHeight: '100px',
-                                resize: 'vertical'
-                              }}
-                            />
-                          ) : (
-                            personalInfo.bio
-                          )}
-                        </Text>
-                        
-                        <VStack spacing="3" align="stretch">
-                          <HStack>
-                            <Icon as={MdWork} color={textColorSecondary} w="20px" h="20px" />
-                            <Text color={textColorSecondary} minW="100px">Position:</Text>
-                            {isEditing ? (
-                              <input
-                                value={editData.position}
-                                onChange={(e) => setEditData({...editData, position: e.target.value})}
-                                style={{
-                                  background: 'transparent',
-                                  border: '1px solid #e2e8f0',
-                                  borderRadius: '4px',
-                                  padding: '4px 8px',
-                                  color: textColor,
-                                  flex: 1
-                                }}
-                              />
-                            ) : (
-                              <Text color={textColor}>{personalInfo.position}</Text>
-                            )}
-                          </HStack>
-                          
-                          {/* UPDATED: Email field is now read-only */}
-                          <HStack>
-                            <Icon as={MdEmail} color={textColorSecondary} w="20px" h="20px" />
-                            <Text color={textColorSecondary} minW="100px">Email:</Text>
-                            <HStack flex="1">
-                              <Text color={textColor} fontWeight="medium">
-                                {personalInfo.email || "No Email"}
-                              </Text>
-                              {personalInfo.email && (
-                                <Badge colorScheme="green" variant="subtle" fontSize="xs">
-                                  Verified
-                                </Badge>
-                              )}
-                            </HStack>
-                          </HStack>
-                          
-                          {/* UPDATED: Education field is read-only */}
-                          <HStack>
-                            <Icon as={MdSchool} color={textColorSecondary} w="20px" h="20px" />
-                            <Text color={textColorSecondary} minW="100px">Education:</Text>
-                            <HStack flex="1">
-                              <Text color={textColor} fontWeight="medium">
-                                {personalInfo.education || "No Institute"}
-                              </Text>
-                              {personalInfo.education && personalInfo.education !== "No Institute" && (
-                                <Badge colorScheme="blue" variant="subtle" fontSize="xs">
-                                  Institute
-                                </Badge>
-                              )}
-                            </HStack>
-                          </HStack>
-                          
-                          {/* UPDATED: Location field is editable but populated from DB */}
-                          <HStack>
-                            <Icon as={MdLocationOn} color={textColorSecondary} w="20px" h="20px" />
-                            <Text color={textColorSecondary} minW="100px">Location:</Text>
-                            {isEditing ? (
-                              <input
-                                value={editData.location}
-                                onChange={(e) => setEditData({...editData, location: e.target.value})}
-                                style={{
-                                  background: 'transparent',
-                                  border: '1px solid #e2e8f0',
-                                  borderRadius: '4px',
-                                  padding: '4px 8px',
-                                  color: textColor,
-                                  flex: 1
-                                }}
-                                placeholder="Enter your location"
-                              />
-                            ) : (
-                              <Text color={textColor}>{personalInfo.location || "Not specified"}</Text>
-                            )}
-                          </HStack>
-                        </VStack>
-
-                        {/* Post Section */}
-                        <Divider my="4" />
-                        <VStack spacing="3" align="stretch">
-                          <Text color={textColorSecondary} fontSize="sm" fontWeight="500">
-                            What you are thinking...
-                          </Text>
-                          <Textarea
-                            value={postText}
-                            onChange={(e) => setPostText(e.target.value)}
-                            placeholder="Share your thoughts..."
-                            resize="vertical"
-                            minH="80px"
-                          />
-                          <Flex justify="space-between" align="center">
-                            <Icon as={MdCamera} color={textColorSecondary} w="20px" h="20px" />
-                            <Button
-                              colorScheme="brand"
-                              size="sm"
-                              onClick={handlePost}
-                              isDisabled={!postText.trim()}
-                            >
-                              Post
-                            </Button>
-                          </Flex>
-                        </VStack>
-                      </VStack>
-                    </CardBody>
-                  </Card>
-
-                  {/* Savings Graph Section */}
-                  <Card bg={cardBg} borderColor={borderColor}>
-                    <CardHeader>
+            <SimpleGrid columns={{ base: 1, lg: 2 }} gap="30px">
+              {/* About Me Section */}
+              <Card bg={cardBg} borderColor={borderColor}>
+                <CardHeader>
+                  <Heading size="md" color={textColor}>
+                    About Me
+                  </Heading>
+                </CardHeader>
+                <CardBody>
+                  <VStack spacing="4" align="stretch">
+                    <Text color={textColor} lineHeight="1.6">
+                      {isEditing ? (
+                        <Textarea
+                          value={editData.bio}
+                          onChange={(e) => setEditData({...editData, bio: e.target.value})}
+                          bg={inputBg}
+                          border="1px solid"
+                          borderColor={borderColor}
+                          borderRadius="4px"
+                          p="8px"
+                          color={textColor}
+                          minHeight="100px"
+                          resize="vertical"
+                          _focus={{ borderColor: brandColor }}
+                        />
+                      ) : (
+                        personalInfo.bio || "No bio available. Click edit to add one."
+                      )}
+                    </Text>
+                    
+                    <VStack spacing="3" align="stretch">
                       <HStack>
-                        <Icon as={MdTrendingUp} color={brandColor} w="24px" h="24px" />
-                        <Heading size="md" color={textColor}>
-                          Last One Year Savings
-                        </Heading>
+                        <Icon as={MdWork} color={textColorSecondary} w="20px" h="20px" />
+                        <Text color={textColorSecondary} minW="100px">Position:</Text>
+                        {isEditing ? (
+                          <Input
+                            value={editData.position}
+                            onChange={(e) => setEditData({...editData, position: e.target.value})}
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={borderColor}
+                            borderRadius="4px"
+                            p="4px 8px"
+                            color={textColor}
+                            flex="1"
+                            _focus={{ borderColor: brandColor }}
+                          />
+                        ) : (
+                          <Text color={textColor}>{personalInfo.position}</Text>
+                        )}
                       </HStack>
-                    </CardHeader>
-                    <CardBody>
-                      <VStack spacing="6" align="stretch">
-                        {/* Summary Stats */}
-                        <SimpleGrid columns={2} gap="4">
-                          <Stat textAlign="center" p="4" bg="green.50" borderRadius="lg">
-                            <StatLabel color={textColorSecondary} fontSize="sm">Total ENTO Saved</StatLabel>
-                            <StatNumber color={successColor} fontSize="xl">
-                              {savingsData.reduce((sum, item) => sum + item.entoSaved, 0).toLocaleString()}
-                            </StatNumber>
-                          </Stat>
-                          <Stat textAlign="center" p="4" bg="blue.50" borderRadius="lg">
-                            <StatLabel color={textColorSecondary} fontSize="sm">Total CO₂ Saved</StatLabel>
-                            <StatNumber color={brandColor} fontSize="xl">
-                              {savingsData.reduce((sum, item) => sum + item.co2Saved, 0).toLocaleString()} kg
-                            </StatNumber>
-                          </Stat>
-                        </SimpleGrid>
+                      
+                      <HStack>
+                        <Icon as={MdEmail} color={textColorSecondary} w="20px" h="20px" />
+                        <Text color={textColorSecondary} minW="100px">Email:</Text>
+                        <HStack flex="1">
+                          <Text color={textColor} fontWeight="medium">
+                            {personalInfo.email || "No Email"}
+                          </Text>
+                          {personalInfo.email && (
+                            <Badge colorScheme="green" variant="subtle" fontSize="xs">
+                              Verified
+                            </Badge>
+                          )}
+                        </HStack>
+                      </HStack>
+                      
+                      <HStack>
+                        <Icon as={MdSchool} color={textColorSecondary} w="20px" h="20px" />
+                        <Text color={textColorSecondary} minW="100px">Education:</Text>
+                        <HStack flex="1">
+                          <Text color={textColor} fontWeight="medium">
+                            {personalInfo.education || "No Institute"}
+                          </Text>
+                          {personalInfo.education && personalInfo.education !== "No Institute" && (
+                            <Badge colorScheme="blue" variant="subtle" fontSize="xs">
+                              Institute
+                            </Badge>
+                          )}
+                        </HStack>
+                      </HStack>
+                      
+                      <HStack>
+                        <Icon as={MdLocationOn} color={textColorSecondary} w="20px" h="20px" />
+                        <Text color={textColorSecondary} minW="100px">Location:</Text>
+                        {isEditing ? (
+                          <Input
+                            value={editData.location}
+                            onChange={(e) => setEditData({...editData, location: e.target.value})}
+                            bg={inputBg}
+                            border="1px solid"
+                            borderColor={borderColor}
+                            borderRadius="4px"
+                            p="4px 8px"
+                            color={textColor}
+                            flex="1"
+                            placeholder="Enter your location"
+                            _focus={{ borderColor: brandColor }}
+                          />
+                        ) : (
+                          <Text color={textColor}>{personalInfo.location || "Not specified"}</Text>
+                        )}
+                      </HStack>
+                    </VStack>
 
-                        {/* Simple Bar Chart */}
+                    {/* Post Section */}
+                    <Divider my="4" />
+                    <VStack spacing="3" align="stretch">
+                      <Text color={textColorSecondary} fontSize="sm" fontWeight="500">
+                        What are you thinking...
+                      </Text>
+                      <Textarea
+                        value={postText}
+                        onChange={(e) => setPostText(e.target.value)}
+                        placeholder="Share your thoughts about sustainability..."
+                        resize="vertical"
+                        minH="80px"
+                        bg={inputBg}
+                        borderColor={borderColor}
+                        _focus={{ borderColor: brandColor }}
+                      />
+                      <Flex justify="space-between" align="center">
+                        <Icon as={MdCamera} color={textColorSecondary} w="20px" h="20px" />
+                        <Button
+                          colorScheme="brand"
+                          size="sm"
+                          onClick={handlePost}
+                          isDisabled={!postText.trim()}
+                        >
+                          Post
+                        </Button>
+                      </Flex>
+                    </VStack>
+                  </VStack>
+                </CardBody>
+              </Card>
+
+              {/* ✅ Real Savings Graph from transaction data */}
+              <Card bg={cardBg} borderColor={borderColor}>
+                <CardHeader>
+                  <HStack>
+                    <Icon as={MdTrendingUp} color={brandColor} w="24px" h="24px" />
+                    <Heading size="md" color={textColor}>
+                      Carbon Impact This Year
+                    </Heading>
+                  </HStack>
+                </CardHeader>
+                <CardBody>
+                  {carbonLoading ? (
+                    <Flex justify="center" align="center" h="300px">
+                      <VStack>
+                        <Spinner size="xl" color={brandColor} />
+                        <Text color={textColorSecondary}>Loading carbon data...</Text>
+                      </VStack>
+                    </Flex>
+                  ) : (
+                    <VStack spacing="6" align="stretch">
+                      {/* Summary Stats from real data */}
+                      <SimpleGrid columns={2} gap="4">
+                        <Stat textAlign="center" p="4" bg={subtleBg} borderRadius="lg">
+                          <StatLabel color={textColorSecondary} fontSize="sm">Total ENTO Saved</StatLabel>
+                          <StatNumber color={successColor} fontSize="xl">
+                            {savingsData.reduce((sum, item) => sum + item.entoSaved, 0).toLocaleString()}
+                          </StatNumber>
+                          <StatHelpText color={textColorSecondary} fontSize="xs">
+                            From {recentTransactions.length} transactions
+                          </StatHelpText>
+                        </Stat>
+                        <Stat textAlign="center" p="4" bg={subtleBg} borderRadius="lg">
+                          <StatLabel color={textColorSecondary} fontSize="sm">Total CO2 Saved</StatLabel>
+                          <StatNumber color={brandColor} fontSize="xl">
+                            {(dashboardData?.co2Savings || savingsData.reduce((sum, item) => sum + item.co2Saved, 0)).toLocaleString()} kg
+                          </StatNumber>
+                          <StatHelpText color={textColorSecondary} fontSize="xs">
+                            Carbon footprint reduction
+                          </StatHelpText>
+                        </Stat>
+                      </SimpleGrid>
+
+                      {/* ✅ FIXED: Simple Bar Chart from real data - NO HOOKS IN CALLBACKS */}
+                      {savingsData.length > 0 ? (
                         <Box>
                           <Text color={textColorSecondary} fontSize="sm" mb="4" textAlign="center">
-                            Monthly ENTO Savings Trend
+                            Monthly ENTO Savings Trend (Real Data)
                           </Text>
                           <HStack spacing="2" align="end" h="120px" justify="center">
                             {savingsData.map((item, index) => {
-                              const maxValue = Math.max(...savingsData.map(d => d.entoSaved));
-                              const height = (item.entoSaved / maxValue) * 100;
+                              const maxValue = Math.max(...savingsData.map(d => d.entoSaved)) || 1;
+                              const height = Math.max(4, (item.entoSaved / maxValue) * 100);
                               const isCurrentMonth = index === savingsData.length - 1;
                               
                               return (
@@ -814,9 +861,11 @@ export default function ProfilePage() {
                                     minH="4px"
                                     transition="all 0.3s ease"
                                     _hover={{
-                                      bg: isCurrentMonth ? "brand.600" : "green.600",
-                                      transform: "scale(1.05)"
+                                      bg: isCurrentMonth ? chartBrandColor : chartSuccessColor,
+                                      transform: "scale(1.05)",
+                                      cursor: "pointer"
                                     }}
+                                    title={`${item.month}: ${item.entoSaved} ENTO, ${item.co2Saved} kg CO2`}
                                   />
                                   <Text color={textColorSecondary} fontSize="xs" fontWeight="bold">
                                     {item.month}
@@ -829,43 +878,80 @@ export default function ProfilePage() {
                             })}
                           </HStack>
                         </Box>
+                      ) : (
+                        <Flex justify="center" align="center" h="120px" direction="column">
+                          <Text color={textColorSecondary} fontSize="sm">
+                            No transaction data available yet
+                          </Text>
+                          <Text color={textColorSecondary} fontSize="xs">
+                            Start making carbon offset purchases to see your impact!
+                          </Text>
+                        </Flex>
+                      )}
 
-                        {/* Monthly Breakdown */}
+                      {/* Recent Transactions */}
+                      {recentTransactions.length > 0 && (
                         <Box>
                           <Text color={textColorSecondary} fontSize="sm" mb="3" fontWeight="500">
-                            Monthly Breakdown
+                            Recent Activity
                           </Text>
                           <VStack spacing="2" align="stretch" maxH="200px" overflowY="auto">
-                            {savingsData.slice(-6).reverse().map((item, index) => (
-                              <HStack key={item.month} justify="space-between" p="2" bg="gray.50" borderRadius="md">
-                                <Text color={textColor} fontSize="sm" fontWeight="500">
-                                  {item.month}
-                                </Text>
-                                <HStack spacing="4">
-                                  <Text color={successColor} fontSize="sm" fontWeight="bold">
-                                    {item.entoSaved} ENTO
-                                  </Text>
-                                  <Text color={brandColor} fontSize="sm" fontWeight="bold">
-                                    {item.co2Saved} kg CO₂
-                                  </Text>
+                            {recentTransactions.slice(0, 6).map((tx, index) => (
+                              <HStack key={tx._id || index} justify="space-between" p="2" bg={subtleBg} borderRadius="md" _hover={{ bg: hoverBg }}>
+                                <HStack>
+                                  <Icon 
+                                    as={tx.type === 'carbon_offset_purchase' ? MdEco : tx.type === 'ento_transfer' ? MdAccountBalanceWallet : MdLocalFireDepartment} 
+                                    color={tx.type === 'carbon_offset_purchase' ? successColor : brandColor} 
+                                    w="16px" 
+                                    h="16px" 
+                                  />
+                                  <VStack align="start" spacing="0">
+                                    <Text color={textColor} fontSize="sm" fontWeight="500">
+                                      {tx.type === 'carbon_offset_purchase' ? 'Carbon Offset' : tx.type === 'ento_transfer' ? 'ENTO Transfer' : 'Energy Usage'}
+                                    </Text>
+                                    <Text color={textColorSecondary} fontSize="xs">
+                                      {new Date(tx.date || tx.createdAt).toLocaleDateString()}
+                                    </Text>
+                                  </VStack>
                                 </HStack>
+                                <VStack align="end" spacing="0">
+                                  <Text color={textColor} fontSize="sm" fontWeight="bold">
+                                    {tx.amount || 0} {tx.type === 'energy_consumption' ? 'kWh' : 'ENTO'}
+                                  </Text>
+                                  <Badge 
+                                    colorScheme={tx.status === 'verified' ? 'green' : 'orange'} 
+                                    variant="subtle" 
+                                    fontSize="xs"
+                                  >
+                                    {tx.status || 'pending'}
+                                  </Badge>
+                                </VStack>
                               </HStack>
                             ))}
                           </VStack>
                         </Box>
+                      )}
 
-                        {/* Growth Indicator */}
-                        <HStack justify="center" p="3" bg="green.50" borderRadius="lg">
+                      {/* Growth Indicator from real data */}
+                      {savingsData.length > 1 && (
+                        <HStack justify="center" p="3" bg={subtleBg} borderRadius="lg">
                           <Icon as={MdTrendingUp} color={successColor} w="20px" h="20px" />
                           <Text color={textColor} fontSize="sm" fontWeight="bold">
-                            {((savingsData[savingsData.length - 1].entoSaved - savingsData[0].entoSaved) / savingsData[0].entoSaved * 100).toFixed(1)}% 
+                            {(() => {
+                              const firstMonth = savingsData[0]?.entoSaved || 0;
+                              const lastMonth = savingsData[savingsData.length - 1]?.entoSaved || 0;
+                              const growth = firstMonth > 0 ? ((lastMonth - firstMonth) / firstMonth * 100) : 0;
+                              return growth > 0 ? `+${growth.toFixed(1)}%` : `${growth.toFixed(1)}%`;
+                            })()} 
                             Growth This Year
                           </Text>
                         </HStack>
-                      </VStack>
-                    </CardBody>
-                  </Card>
-                </SimpleGrid>
+                      )}
+                    </VStack>
+                  )}
+                </CardBody>
+              </Card>
+            </SimpleGrid>
           </Box>
         </CardBody>
       </Card>

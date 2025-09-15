@@ -31,7 +31,7 @@ function SignIn() {
   const navigate = useNavigate();
   const toast = useToast();
   
-  // Destructure ALL context values (this was the main issue)
+  // Destructure ALL context values
   const {
     currentInstitute,
     institutes,
@@ -119,30 +119,33 @@ function SignIn() {
     }
   };
 
-  // Debug logging to help troubleshoot
+  // Debug logging (useful for development)
   useEffect(() => {
-    console.log("🏫 SignIn Debug:");
-    console.log("  - Institutes:", institutes);
-    console.log("  - Institutes length:", institutes?.length);
-    console.log("  - Loading:", instituteLoading);
-    console.log("  - Error:", instituteError);
-    console.log("  - Current Institute:", currentInstitute);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🏫 SignIn Debug:");
+      console.log("  - Institutes:", institutes);
+      console.log("  - Institutes length:", institutes?.length);
+      console.log("  - Loading:", instituteLoading);
+      console.log("  - Error:", instituteError);
+      console.log("  - Current Institute:", currentInstitute);
+    }
   }, [institutes, instituteLoading, instituteError, currentInstitute]);
-  
-  // Render loading state
-  const renderContent = () => {
-    // Handle loading state
-    if (instituteLoading) {
-      return (
+
+  // Handle loading state - Early return for cleaner code
+  if (instituteLoading) {
+    return (
+      <DefaultAuth illustrationBackground={illustration} image={illustration}>
         <Flex justify="center" align="center" height="50vh">
           <Text>Loading institutes...</Text>
         </Flex>
-      );
-    }
+      </DefaultAuth>
+    );
+  }
 
-    // Handle error state
-    if (instituteError) {
-      return (
+  // Handle error state - Early return for cleaner code
+  if (instituteError) {
+    return (
+      <DefaultAuth illustrationBackground={illustration} image={illustration}>
         <Flex justify="center" align="center" height="50vh" flexDirection="column">
           <Alert status="error" mb="20px">
             <AlertIcon />
@@ -150,15 +153,13 @@ function SignIn() {
           </Alert>
           <Button onClick={() => window.location.reload()}>Retry</Button>
         </Flex>
-      );
-    }
-
-    return null;
+      </DefaultAuth>
+    );
   }
 
-  // Main content for the sign-in form
-  const renderSignInForm = () => {
-    return (
+  // Main render - Clean and organized
+  return (
+    <DefaultAuth illustrationBackground={illustration} image={illustration}>
       <Flex
         maxW={{ base: "100%", md: "max-content" }}
         w="100%"
@@ -172,13 +173,6 @@ function SignIn() {
         mt={{ base: "40px", md: "14vh" }}
         flexDirection="column"
       >
-        {/* Debug info (only shows in development) */}
-        {process.env.NODE_ENV === 'development' && (
-          <Box mb="10px" p="10px" bg="gray.100" borderRadius="md" fontSize="sm">
-            <Text>Debug: {institutes?.length || 0} institutes loaded</Text>
-            {instituteError && <Text color="red.500">Error: {instituteError}</Text>}
-          </Box>
-        )}
 
         <Box me="auto">
           <Heading color={textColor} fontSize="36px" mb="10px">
@@ -233,10 +227,15 @@ function SignIn() {
               Institute<Text color={brandStars}>*</Text>
             </FormLabel>
             <InstituteSelector />
-            {/* Show institute count for debugging */}
+            {/* Show institute count and selection status */}
             {institutes && (
               <Text fontSize="xs" color="gray.500" mt="4px">
                 {institutes.length} institutes available
+                {currentInstitute && (
+                  <Text as="span" color="green.500" ml="2">
+                    • {currentInstitute.name} selected
+                  </Text>
+                )}
               </Text>
             )}
           </Box>
@@ -340,6 +339,7 @@ function SignIn() {
                 w="100%"
                 h="50"
                 mb="24px"
+                isDisabled={!currentInstitute} // Added: Disable if no institute selected
               >
                 Sign In
               </Button>
@@ -370,13 +370,6 @@ function SignIn() {
           </Flex>
         </Flex>
       </Flex>
-    );
-  };
-  
-  // Final return statement that uses the conditional rendering
-  return (
-    <DefaultAuth illustrationBackground={illustration} image={illustration}>
-      {instituteLoading || instituteError ? renderContent() : renderSignInForm()}
     </DefaultAuth>
   );
 }

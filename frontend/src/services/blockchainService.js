@@ -1,183 +1,122 @@
-// Blockchain Service for GreenPulse Carbon Transactions
-// This service handles all blockchain interactions for carbon credits and energy data
+// Transaction Service for GreenPulse Carbon Transactions
 
 class BlockchainService {
   constructor() {
-    this.networkId = process.env.REACT_APP_NETWORK_ID || '0x1'; // Mainnet
-    this.contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '0x742d35Cc6634C0532925a3b8D0C4C4C4C4C4C4C4';
-    this.apiUrl = process.env.REACT_APP_BLOCKCHAIN_API_URL || 'https://api.etherscan.io/api';
-    this.apiKey = process.env.REACT_APP_ETHERSCAN_API_KEY || 'demo-key';
+    this.apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   }
 
-  // Initialize Web3 connection
-  async initializeWeb3() {
-    if (typeof window.ethereum !== 'undefined') {
-      try {
-        // Request account access
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        
-        // Get the provider
-        const provider = window.ethereum;
-        
-        // Get the signer
-        const signer = provider.getSigner();
-        
-        return {
-          success: true,
-          provider,
-          signer,
-          networkId: await provider.getNetwork()
-        };
-      } catch (error) {
-        console.error('Error connecting to MetaMask:', error);
-        return {
-          success: false,
-          error: 'Failed to connect to MetaMask'
-        };
-      }
-    } else {
-      return {
-        success: false,
-        error: 'MetaMask not installed'
-      };
-    }
-  }
-
-  // Submit carbon transaction to blockchain
-  async submitCarbonTransaction(transactionData) {
+  // Get transaction history from backend
+  async getTransactionHistory(instituteId, limit = 50, offset = 0) {
     try {
-      const web3Result = await this.initializeWeb3();
+      console.log(`Fetching transaction history for: ${instituteId}`);
       
-      if (!web3Result.success) {
-        return {
-          success: false,
-          error: web3Result.error
-        };
-      }
-
-      // Mock blockchain transaction for demo purposes
-      // In production, this would interact with actual smart contracts
-      const mockTransaction = {
-        txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-        blockNumber: Math.floor(Math.random() * 1000000) + 18000000,
-        gasUsed: Math.floor(Math.random() * 100000) + 50000,
-        gasPrice: '20000000000', // 20 gwei
-        status: 'success',
-        timestamp: new Date().toISOString()
-      };
-
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      return {
-        success: true,
-        transaction: mockTransaction,
-        data: transactionData
-      };
-    } catch (error) {
-      console.error('Blockchain transaction failed:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
-  }
-
-  // Record energy consumption on blockchain
-  async recordEnergyConsumption(consumptionData) {
-    const transactionData = {
-      type: 'energy_consumption',
-      building: consumptionData.building,
-      consumption: consumptionData.consumption,
-      timestamp: new Date().toISOString(),
-      instituteId: consumptionData.instituteId,
-      carbonFootprint: consumptionData.consumption * 0.4, // 0.4 kg CO2 per kWh
-      energyEfficiency: consumptionData.efficiency || 85
-    };
-
-    return await this.submitCarbonTransaction(transactionData);
-  }
-
-  // Purchase carbon offset on blockchain
-  async purchaseCarbonOffset(offsetData) {
-    const transactionData = {
-      type: 'carbon_offset_purchase',
-      amount: offsetData.amount,
-      co2Offset: offsetData.co2Offset,
-      price: offsetData.price,
-      timestamp: new Date().toISOString(),
-      instituteId: offsetData.instituteId,
-      offsetType: offsetData.offsetType || 'renewable_energy'
-    };
-
-    return await this.submitCarbonTransaction(transactionData);
-  }
-
-  // Transfer carbon credits between institutes
-  async transferCarbonCredits(transferData) {
-    const transactionData = {
-      type: 'carbon_credit_transfer',
-      fromInstitute: transferData.fromInstitute,
-      toInstitute: transferData.toInstitute,
-      amount: transferData.amount,
-      timestamp: new Date().toISOString(),
-      reason: transferData.reason || 'Institute collaboration'
-    };
-
-    return await this.submitCarbonTransaction(transactionData);
-  }
-
-  // Get transaction history from blockchain
-  async getTransactionHistory(instituteId, limit = 50) {
-    try {
-      // Mock API call to get transaction history
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const mockTransactions = [
-        {
-          txHash: '0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef',
-          type: 'energy_consumption',
-          amount: 150.5,
-          timestamp: new Date(Date.now() - 86400000).toISOString(),
-          status: 'confirmed',
-          blockNumber: 18500000
-        },
-        {
-          txHash: '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-          type: 'carbon_offset_purchase',
-          amount: 500.0,
-          timestamp: new Date(Date.now() - 172800000).toISOString(),
-          status: 'confirmed',
-          blockNumber: 18499950
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${this.apiUrl}/api/carbon-data/transactions/${instituteId}?limit=${limit}&offset=${offset}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
         }
-      ];
-
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get transaction history');
+      }
+      
+      console.log(`✅ Fetched ${result.transactions.length} transactions`);
+      
       return {
         success: true,
-        transactions: mockTransactions
+        transactions: result.transactions || [],
+        total: result.total || 0
       };
     } catch (error) {
-      console.error('Error fetching transaction history:', error);
+      console.error('❌ Error fetching transaction history:', error);
       return {
         success: false,
-        error: error.message
+        error: error.message,
+        transactions: []
+      };
+    }
+  }
+  
+  // Get ENTO transactions from backend
+  async getEntoTransactions(instituteId, limit = 50, offset = 0) {
+    try {
+      console.log(`Fetching ENTO transactions for: ${instituteId}`);
+      
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${this.apiUrl}/api/carbon-data/ento-transactions/${instituteId}?limit=${limit}&offset=${offset}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to get ENTO transactions');
+      }
+      
+      console.log(`✅ Fetched ${result.transactions.length} ENTO transactions`);
+      
+      return {
+        success: true,
+        transactions: result.transactions || [],
+        total: result.total || 0
+      };
+    } catch (error) {
+      console.error('❌ Error fetching ENTO transactions:', error);
+      return {
+        success: false,
+        error: error.message,
+        transactions: []
       };
     }
   }
 
-  // Verify transaction on blockchain
-  async verifyTransaction(txHash) {
+  // Submit transaction to database (renamed from submitCarbonTransaction)
+  async submitTransaction(transactionData) {
     try {
-      // Mock verification - in production, this would query the blockchain
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${this.apiUrl}/api/carbon-data/transaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
+        },
+        body: JSON.stringify(transactionData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to submit transaction');
+      }
+      
       return {
         success: true,
-        verified: true,
-        confirmations: Math.floor(Math.random() * 10) + 1,
-        blockNumber: Math.floor(Math.random() * 1000000) + 18000000
+        transaction: result.transaction || {},
+        data: result.data || null
       };
     } catch (error) {
+      console.error('❌ Error submitting transaction:', error);
       return {
         success: false,
         error: error.message
@@ -188,46 +127,31 @@ class BlockchainService {
   // Get carbon credit balance for institute
   async getCarbonCreditBalance(instituteId) {
     try {
-      // Mock balance retrieval
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${this.apiUrl}/api/carbon-data/balance/${instituteId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token || ''}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
       return {
         success: true,
-        balance: Math.floor(Math.random() * 10000) + 1000,
+        balance: result.balance || 0,
         currency: 'ENTO',
-        lastUpdated: new Date().toISOString()
+        lastUpdated: result.lastUpdated || new Date().toISOString()
       };
     } catch (error) {
+      console.error('❌ Error getting carbon credit balance:', error);
       return {
         success: false,
-        error: error.message
-      };
-    }
-  }
-
-  // Get network status
-  async getNetworkStatus() {
-    try {
-      const web3Result = await this.initializeWeb3();
-      
-      if (web3Result.success) {
-        return {
-          success: true,
-          connected: true,
-          networkId: web3Result.networkId.chainId,
-          account: await web3Result.signer.getAddress()
-        };
-      } else {
-        return {
-          success: false,
-          connected: false,
-          error: web3Result.error
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        connected: false,
         error: error.message
       };
     }

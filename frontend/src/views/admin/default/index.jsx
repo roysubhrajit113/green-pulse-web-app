@@ -1,7 +1,3 @@
-/*!
-  ... (Horizon UI copyright) ...
-*/
-
 import {
   Box,
   Flex,
@@ -27,7 +23,6 @@ import {
   Avatar,
   AvatarGroup,
 } from "@chakra-ui/react";
-// import Earth from "assets/img/dashboards/usa.png"; // Could represent carbon market or simply keep as is
 import MiniCalendar from "components/calendar/MiniCalendar";
 import CarbonMiniStats from "components/card/CarbonMiniStats";
 import IconBox from "components/icons/IconBox";
@@ -71,6 +66,8 @@ import {
 } from "react-icons/md";
 import { useCarbon } from "contexts/CarbonContext";
 import { useDepartment } from "contexts/DepartmentContext";
+import { useAuth } from "contexts/AuthContext";
+import { useInstitute } from "contexts/InstituteContext";
 import CheckTable from "views/admin/default/components/CheckTable";
 import ComplexTable from "views/admin/default/components/ComplexTable";
 import DailyTraffic from "views/admin/default/components/DailyTraffic";
@@ -78,7 +75,7 @@ import PieCard from "views/admin/default/components/PieCard";
 import Tasks from "views/admin/default/components/Tasks";
 import TotalSpent from "views/admin/default/components/TotalSpent";
 import WeeklyRevenue from "views/admin/default/components/WeeklyRevenue";
-import AlertSystem from "components/alerts/AlertSystem";
+import MeterAlertSystem from "components/alerts/MeterAlertSystem";
 import {
   columnsDataCheck,
   columnsDataComplex,
@@ -86,14 +83,7 @@ import {
 import tableDataCheck from "views/admin/default/variables/tableDataCheck.json";
 import tableDataComplex from "views/admin/default/variables/tableDataComplex.json";
 
-
-
-
-
-
-
-
-// Horizontal Scrolling Department Carbon Data Component
+// Enhanced Department Carbon Data Component with Real Database Integration
 const DepartmentCarbonData = () => {
   const textColor = useColorModeValue("navy.700", "white");
   const textColorSecondary = useColorModeValue("gray.500", "gray.400");
@@ -101,22 +91,50 @@ const DepartmentCarbonData = () => {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const itemBg = useColorModeValue("gray.50", "gray.700");
   
+  // Use real department data from database
+  const { getEnergyConsumptionByDepartment, loading: deptLoading } = useDepartment();
+  const departmentData = getEnergyConsumptionByDepartment();
+
+  // Fallback to carbon context data if department data is not available
   const { dashboardData } = useCarbon();
-  const departmentData = dashboardData?.departmentData || [];
+  const fallbackData = dashboardData?.departmentData || [];
+
+  // Use department context data first, fallback to carbon context
+  const displayData = departmentData && departmentData.length > 0 ? departmentData : fallbackData;
+
+  if (deptLoading) {
+    return (
+      <Card bg={cardBg} borderColor={borderColor} w="100%" h="100%">
+        <CardHeader>
+          <Heading size="md" color={textColor}>
+            Department Carbon Data
+          </Heading>
+        </CardHeader>
+        <CardBody>
+          <Text color={textColorSecondary} textAlign="center">
+            Loading department data...
+          </Text>
+        </CardBody>
+      </Card>
+    );
+  }
 
   return (
     <Card bg={cardBg} borderColor={borderColor} w="100%" h="100%">
       <CardHeader>
         <Heading size="md" color={textColor}>
-          Department Carbon Data
+          Department Energy & Carbon Data
         </Heading>
+        <Text fontSize="xs" color={textColorSecondary}>
+          {departmentData && departmentData.length > 0 ? 'Real-time building data' : 'Sample data'}
+        </Text>
       </CardHeader>
       <CardBody>
         <Box overflowX="auto" w="100%">
           <HStack spacing="4" minW="max-content" pb="2">
-            {departmentData.map((dept, index) => (
+            {displayData.map((dept, index) => (
               <Box
-                key={dept.departmentName || index}
+                key={dept.name || dept.departmentName || index}
                 minW="200px"
                 p="4"
                 bg={itemBg}
@@ -128,7 +146,7 @@ const DepartmentCarbonData = () => {
                   <HStack spacing="2">
                     <Box h="12px" w="12px" bg={dept.color || '#4FD1C7'} borderRadius="50%" />
                     <Text color={textColor} fontSize="sm" fontWeight="bold" textAlign="center">
-                      {dept.departmentName}
+                      {dept.name || dept.departmentName}
                     </Text>
                   </HStack>
                   <Text color={textColor} fontSize="2xl" fontWeight="bold">
@@ -144,12 +162,22 @@ const DepartmentCarbonData = () => {
                     Efficiency
                   </Text>
                   <Badge 
-                    colorScheme={dept.efficiency && dept.efficiency >= 90 ? "green" : dept.efficiency && dept.efficiency >= 70 ? "orange" : "red"}
+                    colorScheme={
+                      (dept.efficiency && dept.efficiency >= 90) ? "green" : 
+                      (dept.efficiency && dept.efficiency >= 70) ? "orange" : "red"
+                    }
                     variant="subtle"
                     fontSize="xs"
                   >
-                    {dept.efficiency && dept.efficiency >= 90 ? "Excellent" : dept.efficiency && dept.efficiency >= 70 ? "Good" : "Needs Improvement"}
+                    {(dept.efficiency && dept.efficiency >= 90) ? "Excellent" : 
+                     (dept.efficiency && dept.efficiency >= 70) ? "Good" : "Needs Improvement"}
                   </Badge>
+                  {/* Show building info if available from department context */}
+                  {dept.square_feet && (
+                    <Text color={textColorSecondary} fontSize="xs">
+                      {dept.square_feet.toLocaleString()} sq ft
+                    </Text>
+                  )}
                 </VStack>
               </Box>
             ))}
@@ -163,15 +191,18 @@ const DepartmentCarbonData = () => {
 export default function CarbonDeptDashboard() {
   // Chakra Color Mode
   const brandColor = useColorModeValue("green.400", "white");
-  const boxBg = useColorModeValue("green.50", "whiteAlpha.100"); // subtle green background for cards
+  const boxBg = useColorModeValue("green.50", "whiteAlpha.100");
   
   // Color mode values for institute header
   const headerCardBg = useColorModeValue("white", "navy.800");
   const headerTextColor = useColorModeValue("navy.700", "white");
   const headerSubTextColor = useColorModeValue("gray.600", "gray.400");
   
-  // Carbon data context
+  // Context data
   const { dashboardData, loading, error } = useCarbon();
+  const { user } = useAuth();
+  const { currentInstitute } = useInstitute();
+  const { departments, loading: deptLoading } = useDepartment();
   
   // Use real data or fallback to defaults
   const co2Savings = dashboardData?.co2Savings ?? 350.4;
@@ -187,8 +218,8 @@ export default function CarbonDeptDashboard() {
     );
   }
 
-  // Show error state if no data is available
-  if (!loading && !dashboardData) {
+  // Show error state if no data is available (comprehensive error handling from first code)
+  if (!loading && !dashboardData && error) {
     return (
       <Box pt={{ base: "130px", md: "80px", xl: "80px" }} textAlign="center" px="20px">
         <Card p="40px" bg={headerCardBg}>
@@ -216,22 +247,23 @@ export default function CarbonDeptDashboard() {
 
   return (
     <Box pt={{ base: "130px", md: "80px", xl: "80px" }} px={{ base: "20px", md: "30px" }}>
-      {/* Institute Name Header */}
+      {/* Institute Name Header (from first code) */}
       <Box mb="20px">
         <Card p="20px" bg={headerCardBg}>
           <Flex align="center" justify="space-between">
             <VStack align="start" spacing="5px">
               <Heading size="lg" color={headerTextColor}>
-                {dashboardData?.instituteDisplayName || "Loading Institute..."}
+                {currentInstitute?.name || dashboardData?.instituteDisplayName || "Loading Institute..."}
               </Heading>
-              {dashboardData?.dataSource && (
-                <Text fontSize="xs" color="gray.500">
-                  Data source: {dashboardData.dataSource} • Last updated: {dashboardData.lastUpdated ? new Date(dashboardData.lastUpdated).toLocaleString() : 'Unknown'}
-                </Text>
-              )}
+              
               <Text color={headerSubTextColor} fontSize="sm">
                 Institute Dashboard - Real-time Carbon & Energy Metrics
               </Text>
+              {departments && departments.length > 0 && (
+                <Text fontSize="xs" color="gray.500">
+                  {departments.length} buildings tracked • {deptLoading ? 'Loading...' : 'Live data'}
+                </Text>
+              )}
             </VStack>
             <Badge 
               colorScheme="green" 
@@ -240,17 +272,16 @@ export default function CarbonDeptDashboard() {
               borderRadius="full"
               fontSize="sm"
             >
-              Live Data
+              {departments && departments.length > 0 ? 'Live Data' : 'Sample Data'}
             </Badge>
           </Flex>
         </Card>
       </Box>
       
-      {/* Alert System */}
+      {/* Enhanced Meter Alert System (from second code) */}
       <Box mb="20px">
-        <AlertSystem />
+        {user && <MeterAlertSystem userId={user._id || user.id} />}
       </Box>
-      
       
       <SimpleGrid
         columns={{ base: 1, md: 2, lg: 3, "2xl": 6 }}
@@ -294,7 +325,6 @@ export default function CarbonDeptDashboard() {
         <CarbonMiniStats
           endContent={
             <Flex me="-16px" mt="10px">
-             
               <Select
                 id="balance"
                 variant="mini"
