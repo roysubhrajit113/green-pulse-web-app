@@ -62,7 +62,7 @@ Green Pulse is a comprehensive energy management platform designed to help insti
 3. Set up environment variables:
    Create a `.env` file in the project root with the following variables:
    ```
-   MONGODB_URI=mongodb+srv://mehwishqureshi:mywish@greenpulse-cluster.74eumjx.mongodb.net/
+   MONGODB_URI=your-mongodb-database
    JWT_SECRET=your_jwt_secret_key
    GEMINI_API_KEY=your_gemini_api_key
    ```
@@ -140,4 +140,5 @@ docker-compose up -d
    ```bash
    npm run deploy
    ```
+
 
